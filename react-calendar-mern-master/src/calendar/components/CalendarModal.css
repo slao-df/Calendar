@@ -1,0 +1,105 @@
+/* src/calendar/components/CalendarModal.css */
+
+.modal-container {
+    width: 600px; /* 모달 너비 */
+    background-color: white;
+    padding: 15px 5px;
+    font-family: 'Pretendard', sans-serif;
+}
+
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* 각 항목 간의 간격 */
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-group.inline-group {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #333;
+}
+
+.form-control {
+    width: auto;
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+
+textarea.form-control {
+    resize: vertical;
+}
+
+.input-with-button {
+    display: flex;
+    gap: 10px;
+}
+.input-with-button input {
+    flex-grow: 1;
+}
+
+.date-picker-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: auto;
+    flex-grow: 1;
+}
+
+.date-separator {
+    font-weight: bold;
+}
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-left: auto; /* 오른쪽으로 밀기 */
+}
+
+.notification-group {
+    display: flex;
+    gap: 10px;
+}
+.notification-group select {
+    max-width: 150px;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end; /* 버튼들을 오른쪽 끝으로 정렬 */
+    align-items: center; /* 버튼들의 세로 정렬을 맞춤 */
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap; /* 공간이 부족하면 버튼들이 다음 줄로 넘어가도록 설정 */
+}
+
+/* 기본 버튼 스타일 */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+}
+.btn-primary {
+    background-color: #4A90E2;
+    color: white;
+}
+.btn-secondary {
+    background-color: #f0f0f0;
+    color: #333;
+    border: 1px solid #ccc;
+}

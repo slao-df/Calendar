@@ -1,0 +1,320 @@
+
+.sidebar-container {
+    width: 280px;
+    min-width: 280px;
+    padding: 20px;
+    border-right: 1px solid #e0e0e0;
+    background-color: #fafafa;
+    font-family: 'Pretendard', sans-serif;
+    display: flex;
+    flex-direction: column;
+    gap: 25px; 
+    overflow: visible; 
+}
+
+.new-event-button {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    background-color: #4A90E2; /* 샘플의 보라색 버튼 */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.new-event-button:hover {
+    background-color: #4A90E2;
+}
+
+/* react-calendar 커스텀 스타일 */
+.mini-calendar-container .react-calendar {
+    width: 100%;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    padding: 5px;
+}
+
+.mini-calendar-container .react-calendar__navigation button {
+    min-width: 30px;
+    font-size: 1rem;
+}
+
+.mini-calendar-container .react-calendar__month-view__weekdays__weekday {
+    font-size: 0.75rem;
+    text-align: center;
+}
+.mini-calendar-container .react-calendar__month-view__weekdays__weekday abbr {
+    text-decoration: none;
+}
+.mini-calendar-container .react-calendar__tile {
+    font-size: 0.8rem;
+    padding: 8px 4px;
+    border-radius: 4px;
+}
+
+/* 캘린더 목록 스타일 */
+.calendar-list-section {
+    margin-top: 0px;
+}
+
+.calendar-list-heading {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 10px;
+}
+
+.calendar-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.calendar-list-item {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    /*justify-content: space-between;  요소를 양쪽 끝으로 밀어냄 */
+    padding: 0px;
+    position: relative;
+}
+
+.calendar-list-item input[type="checkbox"] {
+    margin-right: 10px;
+    width: 16px;
+    height: 16px;
+    accent-color: #4A90E2;
+}
+
+.add-calendar-button {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333; /* 글자색 */
+    background-color: #f0f0f0; /* 샘플의 연한 회색 버튼 */
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: -15px; /* '일정 쓰기' 버튼과의 간격 조정 */
+}
+
+.add-calendar-button:hover {
+    background-color: #e5e5e5;
+}
+
+.calendar-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.header-icons button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #888;
+}
+
+.calendar-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px; /* 목록과의 간격 */
+}
+
+.calendar-list-header h5 {
+    margin: 0; /* 기본 마진 제거 */
+}
+
+.header-icons {
+    display: flex;
+    gap: 8px; /* 아이콘 사이 간격 */
+}
+
+.header-icons button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: #888;
+    padding: 0;
+}
+
+.header-icons button:hover {
+    color: #333;
+}
+
+
+.search-results-section {
+    flex-grow: 1; /* 남은 공간을 채우도록 설정 */
+    overflow-y: auto; /* 결과가 많을 경우 스크롤 */
+    overflow-x: visible;
+}
+
+.search-result {
+    padding: 5px 0;
+    cursor: pointer;
+    gap: 10px;
+}
+
+.search-result:hover {
+    background-color: #f0f0f0;
+}
+
+.color-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.no-results {
+    color: #888;
+    padding: 10px 5px;
+    font-size: 0.9rem;
+}
+
+.search-container {
+    width: 100%;
+    position: relative; 
+    display: flex; 
+    align-items: center; 
+    
+    border: none; 
+    border-radius: 0;
+    padding: 0;
+    
+
+    border-bottom: 1px solid #ddd; /* 밑줄 */
+    margin-bottom: 0px; 
+}
+
+/* 포커스 시 밑줄 색상 변경 */
+.search-container:focus-within { 
+    border-color: #4A90E2; 
+    box-shadow: none; 
+}
+
+.search-input {
+    flex-grow: 1; 
+    padding: 10px 0; /* 상하 패딩 유지 */
+    font-size: 0.9rem;
+    border: none; 
+    outline: none; 
+    background-color: transparent; 
+}
+
+.search-icon {
+    color: #888;
+    margin-right: 10px; /* 아이콘과 input 사이 간격 (조정 가능) */
+    font-size: 0.9rem;
+}
+
+.clear-search-icon {
+    color: #888;
+    margin-left: 10px; /* X 아이콘과 input 사이 간격 (조정 가능) */
+    cursor: pointer; 
+    font-size: 0.9rem;
+    
+    /* 👇 X 버튼이 컨테이너 안으로 들어오도록 */
+    position: relative
+}
+
+.more-options-container { /* 필요한가 */
+  position: relative; /* 반드시 추가 */
+  display: inline-block;
+}
+
+.more-options-btn {
+    background-color: transparent; /* 배경을 투명하게 만듭니다 */
+    border: none;                  /* 테두리를 없앱니다 */
+    cursor: pointer;
+    color: #aaa;                 
+    padding: 5px;                  /* 클릭 영역을 위한 약간의 여백 */
+    font-size: 1rem;               
+    border-radius: 4px; 
+
+}
+
+.more-options-btn:hover {
+    background-color: #f0f0f0;     /* 마우스를 올렸을 때만 연한 배경색 표시 */
+    color: #333;                   /* 마우스를 올렸을 때 아이콘 색상 진하게 */
+}
+
+.calendar-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.menu-container {
+  /* display: block !important;  */
+  position: relative;
+  visibility: visible !important; 
+  opacity: 1 !important;
+  margin-left: auto; 
+  position: relative;
+  overflow: visible;
+  
+}
+
+.dropdown-menu {
+  display: block !important; 
+  visibility: visible !important; 
+  opacity: 1 !important;
+  position: fixed;
+  top: var(--buttonY);
+  left: var(--buttonX);
+  transform: translateY(-50%); 
+  margin-left: 5px;          
+
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 8px 0;
+  width: max-content;
+  z-index: 1000;
+  white-space: nowrap; 
+  /*overflow: visible;*/
+}
+
+.dropdown-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dropdown-menu li {
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.dropdown-menu li:hover {
+  background-color: #f5f5f5;
+}
+
+.dropdown-menu li:first-child {
+  border-bottom: 1px solid #eee; 
+}
+
+
+.calendar-layout-container {
+  display: flex;
+  flex-grow: 1;
+  overflow: visible; 
+}
