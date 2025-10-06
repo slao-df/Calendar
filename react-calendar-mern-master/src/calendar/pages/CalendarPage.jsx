@@ -25,7 +25,7 @@ const DnDCalendar = withDragAndDrop(Calendar);
 export const CalendarPage = () => {
   const { user } = useAuthStore();
   const { openDateModal } = useUiStore();
-  const { events, setActiveEvent, startLoadingEvents, startSavingEvent, visibleCalendarIds } = useCalendarStore();
+  const { events, calendars, setActiveEvent, startLoadingEvents, startSavingEvent, visibleCalendarIds } = useCalendarStore();
   const [lastView, setLastView] = useState(localStorage.getItem('lastView') || 'month');
 
   const eventStyleGetter = (event, start, end, isSelected) => {
@@ -40,6 +40,38 @@ export const CalendarPage = () => {
     return { style };
   };
   
+  // 현재 캘린더 색을 기준으로 이벤트 색을 “패치”한 배열 만들기
+  const colorPatchedEvents = useMemo(() => {
+    // id 매칭을 빠르게 하려고 Map 구성 (id와 _id 모두 대비)
+    const colorById = new Map();
+    calendars.forEach(c => {
+      const cid = c.id || c._id;
+      if (cid) colorById.set(String(cid), c.color);
+    });
+
+    return events.map(ev => {
+      // event.calendar가 문자열(id)일 수도, 객체일 수도 있으니 모두 처리
+      const evCalId =
+        typeof ev.calendar === 'string'
+          ? ev.calendar
+          : ev.calendar?.id || ev.calendar?._id;
+
+      if (!evCalId) return ev;
+
+      const latestColor = colorById.get(String(evCalId));
+      // 색이 같으면 원본 반환(불필요한 새 객체 생성 방지)
+      if (!latestColor || ev.calendar?.color === latestColor) return ev;
+
+      // ✅ 최신 색으로 덮어씌운 새 이벤트 객체 반환
+      const patchedCalendar =
+        typeof ev.calendar === 'string'
+          ? { id: evCalId, color: latestColor } // 문자열이던 케이스를 객체로 정규화
+          : { ...ev.calendar, color: latestColor };
+
+      return { ...ev, calendar: patchedCalendar };
+    });
+  }, [events, calendars]);
+
   /*
   const filteredEvents = useMemo(() => {
       if (!visibleCalendarIds || !Array.isArray(visibleCalendarIds)) {
@@ -55,14 +87,16 @@ export const CalendarPage = () => {
 
   const filteredEvents = useMemo(() => {
     if (!visibleCalendarIds || !Array.isArray(visibleCalendarIds)) {
-      return events;
+      return colorPatchedEvents;
     }
-
-    return events.filter(event => {
-      const calendarId = event.calendar?.id || event.calendar?._id;
-      return calendarId && visibleCalendarIds.includes(calendarId);
+    return colorPatchedEvents.filter(ev => {
+      const calId =
+        typeof ev.calendar === 'string'
+          ? ev.calendar
+          : ev.calendar?.id || ev.calendar?._id;
+      return calId && visibleCalendarIds.includes(calId);
     });
-  }, [events, visibleCalendarIds]);
+  }, [colorPatchedEvents, visibleCalendarIds]);
 
 
 
