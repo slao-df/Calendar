@@ -1,6 +1,7 @@
 const { response } = require('express');
 const Calendar = require('../models/Calendar'); 
 const Evento = require('../models/Evento');
+const crypto = require('crypto');
 
 const getCalendars = async (req, res = response) => {
     try {
@@ -104,6 +105,28 @@ const deleteCalendar = async (req, res = response) => {
       ok: false,
       msg: '캘린더 삭제 중 오류 발생',
     });
+  }
+};
+
+const crearCalendario = async (req, res) => {
+  try {
+    const sharePassword = Math.random().toString(36).slice(2, 8); // 6자리 랜덤 비밀번호
+    const shareToken = crypto.randomBytes(16).toString('hex');   // 링크 토큰
+
+    const calendar = new Calendar({
+      ...req.body,
+      user: req.uid,
+      sharePassword,
+      shareToken,
+      isShared: true
+    });
+
+    const saved = await calendar.save();
+    res.json({ ok: true, calendar: saved });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ ok: false, msg: '캘린더 생성 실패' });
   }
 };
 
