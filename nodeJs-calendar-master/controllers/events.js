@@ -13,6 +13,9 @@ const getEventos = async (req, res = response) => {
 };
 
 const crearEvento = async (req, res = response) => {
+    console.log('📩 요청 바디:', req.body);
+    console.log('📂 첨부 파일:', req.files);
+
     const evento = new Evento(req.body);
     try {
         evento.user = req.uid;
