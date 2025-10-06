@@ -60,30 +60,27 @@ export const CalendarModal = () => {
         closeDateModal();
     };
 
-    const onSubmit = async (event) => {
-        event.preventDefault();
-        const data = new FormData();
-        data.append('title', formValues.title);
-        data.append('notes', formValues.notes);
-        data.append('location', formValues.location);
-        data.append('start', formValues.start);
-        data.append('end', formValues.end);
-        data.append('isAllDay', formValues.isAllDay);
-        data.append('calendar', formValues.calendar);
 
-        // 첨부 파일 추가
-        if (formValues.attachments) {
-            formValues.attachments.forEach((file) => {
-            data.append('attachments', file);
-            });
+     
+    const onSubmit = async (e) => {
+        e.preventDefault();
+
+        const data = {
+            ...formValues,
+            start: new Date(formValues.start).toISOString(),
+            end: new Date(formValues.end).toISOString(),
+        };
+
+        console.log('📤 저장 요청 데이터:', data);
+
+        try {
+            await startSavingEvent(data); // axios.post('/api/events', data)
+            closeDateModal();
+        } catch (error) {
+            console.error('❌ 이벤트 저장 실패:', error);
         }
+    };
 
-        await startSavingEvent(data);      // 백엔드에서 FormData 처리 필요
-        closeDateModal();
-        /* await startSavingEvent(formValues);
-        closeDateModal(); */
-
-    }
 
     const handleDeleteEvent = () => {
         startDeletingEvent();
