@@ -67,26 +67,45 @@ const updateCalendar = async (req, res = response) => {
 
 const deleteCalendar = async (req, res = response) => {
     const calendarId = req.params.id;
-    const uid = req.uid;
+  const uid = req.uid;
 
-    try {
-        const calendar = await Calendar.findById(calendarId);
-        if (!calendar) {
-            return res.status(404).json({ ok: false, msg: '캘린더를 찾을 수 없습니다.' });
-        }
-        if (calendar.user.toString() !== uid) {
-            return res.status(401).json({ ok: false, msg: '삭제 권한이 없습니다.' });
-        }
-
-        await Evento.deleteMany({ calendar: calendarId });
-        await Calendar.findByIdAndDelete(calendarId);
-        res.json({ ok: true });
-
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ ok: false, msg: '캘린더 삭제 중 오류 발생' });
+  try {
+    // 1. 캘린더 존재 여부 확인
+    const calendar = await Calendar.findById(calendarId);
+    if (!calendar) {
+      return res.status(404).json({
+        ok: false,
+        msg: '캘린더를 찾을 수 없습니다.',
+      });
     }
-}
+
+    // 2. 사용자 권한 확인
+    if (calendar.user.toString() !== uid) {
+      return res.status(401).json({
+        ok: false,
+        msg: '삭제 권한이 없습니다.',
+      });
+    }
+
+    // 3. 해당 캘린더에 속한 모든 이벤트 삭제
+    await Evento.deleteMany({ calendar: calendarId });
+
+    // 4. 캘린더 삭제
+    await Calendar.findByIdAndDelete(calendarId);
+
+    // 5. 성공 응답
+    res.json({
+      ok: true,
+      msg: '캘린더와 해당 일정이 모두 삭제되었습니다.',
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      ok: false,
+      msg: '캘린더 삭제 중 오류 발생',
+    });
+  }
+};
 
 module.exports = {
     getCalendars,
