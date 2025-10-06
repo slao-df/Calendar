@@ -113,6 +113,25 @@ export const calendarSlice = createSlice({
                 state.activeCalendar = null;
             }
         },
+        updateEventsCalendarColor: (state, { payload: updatedCalendar }) => {
+            const updatedEvents = state.events.map(event =>
+                event.calendar?.id === updatedCalendar.id
+                ? {
+                    ...event,
+                    calendar: {
+                        ...event.calendar,
+                        color: updatedCalendar.color
+                    }
+                    }
+                : event
+            );
+
+            // ✅ 완전히 새 배열로 교체
+            state.events = [...updatedEvents];
+        }
+
+
+
     }
 });
 
@@ -131,5 +150,6 @@ export const {
     onSetActiveCalendar,
     onClearActiveCalendar,
     onUpdateCalendar, 
-    onDeleteCalendar
+    onDeleteCalendar,
+    updateEventsCalendarColor, 
 } = calendarSlice.actions;
