@@ -11,7 +11,26 @@ const ShareCalendarModal = ({ isOpen, onClose, shareData, onShare }) => {
     }
   }, [isOpen, shareData]);
 
+   // 모달 열릴 때 자동 비밀번호 입력
+  useEffect(() => {
+    if (shareData) {
+      setPassword(shareData.password || '');
+    }
+  }, [shareData]);
+
   if (!isOpen) return null;
+
+   // 🔹 링크+비밀번호 복사
+  const handleCopyAll = () => {
+    const textToCopy = `공유 캘린더 링크: ${shareData.link}\n비밀번호: ${password}`;
+    navigator.clipboard.writeText(textToCopy)
+      .then(() => alert('링크, 비밀번호가 복사되었습니다.'))
+      .catch(err => console.error('복사 실패', err));
+  };
+
+  const handleShareClick = () => {
+    onShare({ ...shareData, password });
+  };
 
   return (
     <div className="modal-overlay">
@@ -33,6 +52,9 @@ const ShareCalendarModal = ({ isOpen, onClose, shareData, onShare }) => {
         </div>
 
         <div className="modal-actions">
+          <button className="btn-share" onClick={handleCopyAll}>
+            링크, 비밀번호 복사
+          </button>
           <button
             className="btn-share"
             onClick={() => onShare({ ...shareData, password })}
