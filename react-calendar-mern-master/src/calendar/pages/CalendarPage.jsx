@@ -99,6 +99,7 @@ export const CalendarPage = () => {
         <main className="main-content">
           <DndProvider backend={HTML5Backend}>
             <DnDCalendar
+              //key={filteredEvents.length}
               culture='ko'
               localizer={localizer}
               events={filteredEvents}
