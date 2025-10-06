@@ -50,6 +50,11 @@ export const AddCalendarModal = () => {
         startDeletingCalendar(activeCalendar.id); // 👈 id 대신 _id가 아닌 id를 사용
         onCloseModal(); // 삭제 후 모달 닫기
     }
+    const handleDeleteCalendar = async () => {
+        if (!activeCalendar) return;
+        await startDeletingCalendar(activeCalendar.id);  // ✅ 삭제 요청
+        closeAddCalendarModal();                          // 모달 닫기
+    };
 
     return (
         <Modal
@@ -93,7 +98,7 @@ export const AddCalendarModal = () => {
                     </div>
                     <div className="form-actions">
                         { activeCalendar && (
-                            <button type="button" className="btn btn-danger" onClick={handleDelete}>
+                            <button type="button" className="btn btn-danger" onClick={handleDeleteCalendar}>
                                 삭제
                             </button>
                         )}
