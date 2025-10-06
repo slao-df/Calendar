@@ -16,6 +16,7 @@ import {
     onClearActiveCalendar,
     onUpdateCalendar,
     onDeleteCalendar,
+    updateEventsCalendarColor
 } from '../store';
 
 export const useCalendarStore = () => {
@@ -116,11 +117,22 @@ export const useCalendarStore = () => {
 
     const startUpdatingCalendar = async (calendarData) => {
         try {
+            // 1. 백엔드에 캘린더 수정 요청
             const { data } = await calendarApi.put(`/calendars/${calendarData.id}`, calendarData);
+
+            // 2. Redux의 calendars 상태 업데이트
             dispatch(onUpdateCalendar(data.calendar));
+
+            // 3. ✅ 일정(events)의 캘린더 색상도 즉시 업데이트
+            dispatch(updateEventsCalendarColor(data.calendar));
+
             Swal.fire('수정됨', '캘린더 정보가 수정되었습니다.', 'success');
-        } catch (error) { /*...*/ }
-    }
+        } catch (error) {
+            console.error('❌ 캘린더 수정 실패:', error);
+            Swal.fire('수정 오류', error.response?.data?.msg || '캘린더 수정 중 오류 발생', 'error');
+        }
+    };
+
 
     const startDeletingCalendar = async (calendarId) => {
         try {
@@ -141,6 +153,8 @@ export const useCalendarStore = () => {
             console.error('❌ 캘린더 삭제 실패:', error);
         }
     };
+
+
 
 
     return {
@@ -165,5 +179,6 @@ export const useCalendarStore = () => {
         clearActiveCalendar,
         startUpdatingCalendar,
         startDeletingCalendar,
+
     }
 }
