@@ -29,5 +29,5 @@ app.use('/api/calendars', require('./routes/calendars')); // 추가 작성
 
 //Escuchar peticiones 
 app.listen( process.env.PORT, () => {
-    console.log(`Servidor corriendo en puerto ${ process.env.PORT }`);
+    console.log(`서버 실행 중: ${ process.env.PORT }`);
 });
