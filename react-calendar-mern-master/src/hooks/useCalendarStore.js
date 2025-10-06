@@ -70,8 +70,7 @@ export const useCalendarStore = () => {
     const startLoadingEvents = async() => {
         try {
             const { data } = await calendarApi.get('/events');
-            const events = convertEventsToDateEvents( data.eventos );        
-            
+            const events = convertEventsToDateEvents( data.eventos );            
             dispatch( onLoadEvents( events ) );
         } catch (error) {
             console.log(error)
@@ -125,14 +124,24 @@ export const useCalendarStore = () => {
 
     const startDeletingCalendar = async (calendarId) => {
         try {
+            // 백엔드 캘린더 삭제
             await calendarApi.delete(`/calendars/${calendarId}`);
+
+            // Redux의 캘린더 삭제
             dispatch(onDeleteCalendar(calendarId));
-            Swal.fire('삭제됨', '캘린더와 관련 일정이 모두 삭제되었습니다.', 'success');
+
+            // ✅ 현재 events에서 해당 캘린더에 속한 이벤트 제거
+            dispatch(onLoadEvents(events.filter(event => {
+            const id = event.calendar?.id || event.calendar?._id;
+            return id !== calendarId;
+            })));
+
+            Swal.fire('삭제 완료', '캘린더와 해당 일정이 모두 삭제되었습니다.', 'success');
         } catch (error) {
-            console.log(error);
-            Swal.fire('삭제 오류', error.response?.data?.msg || '삭제에 실패했습니다.', 'error');
+            console.error('❌ 캘린더 삭제 실패:', error);
         }
-    }
+    };
+
 
     return {
         //* 속성/특성
