@@ -3,7 +3,7 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './Sidebar.css';
 import { useUiStore, useCalendarStore } from '../../hooks';
-
+import ShareCalendarModal from './ShareCalendarModal.jsx';
 export const Sidebar = () => {
   const [date, setDate] = useState(new Date());
   const [searchTerm, setSearchTerm] = useState('');
@@ -15,6 +15,10 @@ export const Sidebar = () => {
   const { calendars, startLoadingCalendars, clearActiveEvent, visibleCalendarIds, toggleCalendarVisibility, setActiveCalendar } = useCalendarStore();
   
   const [checkedState, setCheckedState] = useState({});
+
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [shareData, setShareData] = useState(null);
+
 
   // 👇 2. 스토어의 visibleCalendarIds가 변경될 때마다 로컬 상태를 업데이트
   useEffect(() => {
@@ -87,6 +91,16 @@ export const Sidebar = () => {
         }));
         toggleCalendarVisibility(calendarId);
     };
+    const handleShareClick = (calendar) => {
+      // 🔗 임시로 생성한 데이터 (백엔드에서 받아오도록 변경 가능)
+      const fakeLink = `${window.location.origin}/shared/${calendar.id}`;
+      const fakePassword = Math.random().toString(36).slice(-6);
+
+      setShareData({ link: fakeLink, password: fakePassword });
+      setIsShareModalOpen(true);
+      setOpenMenuId(null); // 드롭다운 닫기
+    };
+
 
   return (
     <aside className="sidebar-container">
@@ -166,7 +180,7 @@ export const Sidebar = () => {
                   {openMenuId === calendar.id && (
                     <div className="dropdown-menu">
                       <ul>
-                        <li>캘린더 공유하기</li>
+                        <li onClick={() => handleShareClick(calendar)}>캘린더 공유하기</li>
                         <li onClick={() => handleEditClick(calendar)}>수정/삭제</li>
                       </ul>
                     </div>
@@ -212,7 +226,7 @@ export const Sidebar = () => {
                     {openMenuId === calendar.id && (
                       <div className="dropdown-menu">
                         <ul>
-                          <li>캘린더 공유하기</li>
+                          <li onClick={() => handleShareClick(calendar)}>캘린더 공유하기</li>
                           <li onClick={() => handleEditClick(calendar)}>수정/삭제</li>
                         </ul>
                       </div>
@@ -226,7 +240,11 @@ export const Sidebar = () => {
           </ul>
         </div>
       )}
-
+      <ShareCalendarModal 
+        isOpen={isShareModalOpen} 
+        onClose={() => setIsShareModalOpen(false)} 
+        shareData={shareData} 
+      />
       
     </aside>
   );
