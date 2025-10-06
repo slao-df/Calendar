@@ -35,7 +35,7 @@ export const calendarSlice = createSlice({
                 state.activeEvent = null;
             }
         },
-        onLoadEvents: (state, { payload = [] }) => {
+        /*onLoadEvents: (state, { payload = [] }) => {
             state.isLoadingEvents = false;
             payload.forEach( event => {
                 const exists = state.events.some( dbEvent => dbEvent.id === event.id );
@@ -43,7 +43,12 @@ export const calendarSlice = createSlice({
                     state.events.push( event )
                 }
             })
+        },*/
+        onLoadEvents: (state, { payload = [] }) => {
+            state.isLoadingEvents = false;
+            state.events = [...payload];   // ✅ 새 배열로 덮어써 삭제된 이벤트 반영
         },
+
         onLogoutCalendar: ( state ) => {
             state.isLoadingEvents = true;
             state.events      = [];
@@ -99,6 +104,14 @@ export const calendarSlice = createSlice({
         onDeleteCalendar: (state, { payload: calendarId }) => { // 👈 삭제 리듀서 추가
             state.calendars = state.calendars.filter(calendar => calendar._id !== calendarId);
             state.events = state.events.filter(event => event.calendar._id !== calendarId);
+        },
+        onDeleteCalendar: (state, { payload }) => {
+            state.calendars = state.calendars.filter(
+                cal => cal.id !== payload
+            );
+            if (state.activeCalendar?.id === payload) {
+                state.activeCalendar = null;
+            }
         },
     }
 });
