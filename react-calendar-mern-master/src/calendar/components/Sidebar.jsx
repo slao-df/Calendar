@@ -30,20 +30,18 @@ export const Sidebar = () => {
   }, []);
 
   useEffect(() => {
-      const handleClickOutside = (event) => {
-          // 메뉴가 열려 있고, 클릭한 곳이 메뉴 영역(menuRef) 외부일 때 메뉴를 닫습니다.
-          if (openMenuId !== null && menuRef.current && !menuRef.current.contains(event.target)) {
-              setOpenMenuId(null);
-          }
-      };
+    const handleClickOutside = (event) => {
+      // dropdown-menu 안쪽 클릭은 무시
+      if (event.target.closest('.dropdown-menu')) return;
 
-      // 화면 전체에 클릭 이벤트 리스너 추가
-      document.addEventListener('mousedown', handleClickOutside);
+      // 메뉴 영역 밖 클릭 시에만 닫기
+      if (openMenuId !== null && menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpenMenuId(null);
+      }
+    };
 
-      // 컴포넌트가 사라질 때 이벤트 리스너를 정리합니다.
-      return () => {
-          document.removeEventListener('mousedown', handleClickOutside);
-      };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [openMenuId]);
 
   const filteredCalendars = useMemo(() => {
