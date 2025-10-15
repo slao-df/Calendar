@@ -3,8 +3,12 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import './Sidebar.css';
 import { useUiStore, useCalendarStore } from '../../hooks';
-import ShareCalendarModal from './ShareCalendarModal.jsx';
-export const Sidebar = () => {
+//import ShareCalendarModal from './ShareCalendarModal.jsx';
+import { updateCalendar } from "../../api/calendarApi";
+
+export const Sidebar = ({onShare}) => {
+  const { startSavingCalendar } = useCalendarStore(); 
+
   const [date, setDate] = useState(new Date());
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -16,8 +20,8 @@ export const Sidebar = () => {
   
   const [checkedState, setCheckedState] = useState({});
 
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-  const [shareData, setShareData] = useState(null);
+  //const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  //const [shareData, setShareData] = useState(null);
 
 
   // 👇 2. 스토어의 visibleCalendarIds가 변경될 때마다 로컬 상태를 업데이트
@@ -90,16 +94,41 @@ export const Sidebar = () => {
             [calendarId]: !prevState[calendarId]
         }));
         toggleCalendarVisibility(calendarId);
-    };
-    const handleShareClick = (calendar) => {
-      // 🔗 임시로 생성한 데이터 (백엔드에서 받아오도록 변경 가능)
-      const fakeLink = `${window.location.origin}/shared/${calendar.id}`;
-      const fakePassword = Math.random().toString(36).slice(-6);
+  };
+  // src/components/Sidebar.jsx
 
-      setShareData({ link: fakeLink, password: fakePassword });
-      setIsShareModalOpen(true);
-      setOpenMenuId(null); // 드롭다운 닫기
-    };
+const handleShareClick = async (calendar) => {
+      let calendarData = { ...calendar };
+
+      // 1. DB 필드명인 'sharePassword'가 있는지 확인합니다.
+      if (!calendarData.sharePassword) {
+          try {
+              console.log("최초 공유: sharePassword와 shareToken을 생성하고 DB에 저장합니다.");
+              
+              // API 호출을 통해 백엔드가 비밀번호와 토큰을 모두 생성하고 저장하게 합니다.
+              // calendarData에는 name, color 등 기존 정보만 보냅니다.
+              const savedCalendar = await startSavingCalendar(calendarData);
+              
+              // 서버로부터 받은 최신 데이터로 변수를 교체합니다.
+              calendarData = savedCalendar; 
+
+          } catch (error) {
+              console.error("공유 정보 저장 중 에러 발생:", error);
+              return; // 에러 발생 시 함수를 종료합니다.
+          }
+      }
+
+      // ❗️ 2. (핵심) 링크를 만들 때 'id' 대신 'shareToken'을 사용합니다.
+      const shareLink = `${window.location.origin}/share-calendar/${calendarData.shareToken}`;
+
+      // ❗️ 3. (핵심) 모달을 열 때 DB 필드명과 일치하는 'sharePassword'를 전달합니다.
+      onShare(
+          calendarData.id, 
+          shareLink, // 방금 만든 올바른 링크
+          calendarData.sharePassword
+      );
+  };
+
 
 
   return (
@@ -226,7 +255,7 @@ export const Sidebar = () => {
                     {openMenuId === calendar.id && (
                       <div className="dropdown-menu">
                         <ul>
-                          <li onClick={() => handleShareClick(calendar)}>캘린더 공유하기</li>
+                          <li onClick={() => handleShareClick(calendar)}>공유하기</li>
                           <li onClick={() => handleEditClick(calendar)}>수정/삭제</li>
                         </ul>
                       </div>
@@ -240,11 +269,12 @@ export const Sidebar = () => {
           </ul>
         </div>
       )}
-      <ShareCalendarModal 
+      
+      {/* <ShareCalendarModal 
         isOpen={isShareModalOpen} 
         onClose={() => setIsShareModalOpen(false)} 
         shareData={shareData} 
-      />
+      /> */}
       
     </aside>
   );
