@@ -85,20 +85,12 @@ export const calendarSlice = createSlice({
         onClearActiveCalendar: (state) => { // 👈 활성 캘린더 초기화 리듀서
             state.activeCalendar = null;
         },
-        onUpdateCalendar: ( state, { payload: updatedCalendar } ) => {
-            // calendars 배열 업데이트
-            state.calendars = state.calendars.map(
-                calendar => calendar.id === updatedCalendar.id ? updatedCalendar : calendar
-            );
-            // events 배열에 있는 관련 캘린더 정보도 업데이트
-            state.events = state.events.map( event => {
-                if ( event.calendar.id === updatedCalendar.id ) {
-                    return {
-                        ...event,
-                        calendar: updatedCalendar
-                    }
+        onUpdateCalendar: (state, { payload }) => {
+            state.calendars = state.calendars.map(calendar => {
+                if (calendar.id === payload.id) {
+                    return payload; // payload는 서버에서 받은 최신 캘린더 정보
                 }
-                return event;
+                return calendar;
             });
         },
         onDeleteCalendar: (state, { payload: calendarId }) => { // 👈 삭제 리듀서 추가
@@ -128,7 +120,8 @@ export const calendarSlice = createSlice({
 
             // ✅ 완전히 새 배열로 교체
             state.events = [...updatedEvents];
-        }
+        },
+        
 
 
 
