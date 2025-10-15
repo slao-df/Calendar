@@ -115,10 +115,39 @@ const deleteCalendar = async (req, res = response) => {
     }
 };
 
+const getSharedCalendar = async (req, res = response) => {
+    try {
+        const { token } = req.params;
+
+        // 1. 토큰을 기준으로 캘린더를 찾습니다.
+        const calendar = await Calendar.findOne({ shareToken: token });
+
+        // 2. 캘린더가 없거나 공유 상태가 아니라면 에러를 반환합니다.
+        if (!calendar || !calendar.isShared) {
+            return res.status(404).json({ ok: false, msg: '공유된 캘린더를 찾을 수 없습니다.' });
+        }
+
+        // 3. 찾은 캘린더의 ID를 이용해 해당 캘린더에 속한 모든 일정을 찾습니다.
+        const events = await Evento.find({ calendar: calendar._id });
+
+        // 4. 캘린더 정보와 일정 정보를 함께 보내줍니다.
+        res.json({
+            ok: true,
+            calendar,
+            events
+        });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ ok: false, msg: '데이터를 불러오는 중 오류 발생' });
+    }
+};
+
 
 module.exports = {
     getCalendars,
     createCalendar,
-    updateCalendar, 
-    deleteCalendar, 
+    updateCalendar,
+    deleteCalendar,
+    getSharedCalendar,
 }
