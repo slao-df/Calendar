@@ -112,15 +112,18 @@ export const useCalendarStore = () => {
     } */
    const startSavingCalendar = async (calendarToSave) => {
         try {
+            // ❗️ 1. 서버로 보내는 데이터를 확인하기 위한 로그
+            console.log('📡 서버로 보내는 데이터:', calendarToSave);
+
             const { data } = await calendarApi.put(`/calendars/${calendarToSave.id}`, calendarToSave);
             
+            // ❗️ 2. 서버로부터 받은 응답 데이터를 확인하기 위한 로그
             console.log('✅ 서버로부터 받은 응답 데이터:', data); 
             
-            // ❗️ (핵심 수정) data 객체 안의 'calendar' 속성을 사용합니다.
-            dispatch(onUpdateCalendar(data.calendar)); 
+            const updatedCalendar = data.calendar || data;
+            dispatch(onUpdateCalendar(updatedCalendar));
             
-            // ❗️ 반환하는 값도 'data.calendar'여야 합니다.
-            return data.calendar; 
+            return updatedCalendar;
         } catch (error) {
             console.log('Error saving calendar', error);
             throw error;
