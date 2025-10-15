@@ -14,6 +14,7 @@ import {
   CalendarToolbar,
   AddCalendarModal,
   AddSharedEventModal,
+  ShareCalendarModal, // ❗️ 1. ShareCalendarModal 컴포넌트 import 추가
 } from '../';
 
 import { localizer } from '../../helpers';
@@ -25,8 +26,12 @@ const DnDCalendar = withDragAndDrop(Calendar);
 export const CalendarPage = () => {
   const { user } = useAuthStore();
   const { openDateModal } = useUiStore();
-  const { events, calendars, setActiveEvent, startLoadingEvents, startSavingEvent, visibleCalendarIds } = useCalendarStore();
+  const { events, calendars, setActiveEvent, startLoadingEvents, startSavingEvent, visibleCalendarIds, startSavingCalendar } = useCalendarStore();
   const [lastView, setLastView] = useState(localStorage.getItem('lastView') || 'month');
+
+  // ❗️ 2. 공유 모달의 상태와 데이터를 관리할 useState 추가
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [shareData, setShareData] = useState(null);
 
   const eventStyleGetter = (event, start, end, isSelected) => {
     const isMyEvent = (user.uid === event.user._id) || (user.uid === event.user.uid);
@@ -40,9 +45,7 @@ export const CalendarPage = () => {
     return { style };
   };
   
-  // 현재 캘린더 색을 기준으로 이벤트 색을 “패치”한 배열 만들기
   const colorPatchedEvents = useMemo(() => {
-    // id 매칭을 빠르게 하려고 Map 구성 (id와 _id 모두 대비)
     const colorById = new Map();
     calendars.forEach(c => {
       const cid = c.id || c._id;
@@ -50,7 +53,6 @@ export const CalendarPage = () => {
     });
 
     return events.map(ev => {
-      // event.calendar가 문자열(id)일 수도, 객체일 수도 있으니 모두 처리
       const evCalId =
         typeof ev.calendar === 'string'
           ? ev.calendar
@@ -59,31 +61,16 @@ export const CalendarPage = () => {
       if (!evCalId) return ev;
 
       const latestColor = colorById.get(String(evCalId));
-      // 색이 같으면 원본 반환(불필요한 새 객체 생성 방지)
       if (!latestColor || ev.calendar?.color === latestColor) return ev;
 
-      // ✅ 최신 색으로 덮어씌운 새 이벤트 객체 반환
       const patchedCalendar =
         typeof ev.calendar === 'string'
-          ? { id: evCalId, color: latestColor } // 문자열이던 케이스를 객체로 정규화
+          ? { id: evCalId, color: latestColor }
           : { ...ev.calendar, color: latestColor };
 
       return { ...ev, calendar: patchedCalendar };
     });
   }, [events, calendars]);
-
-  /*
-  const filteredEvents = useMemo(() => {
-      if (!visibleCalendarIds || !Array.isArray(visibleCalendarIds)) {
-          // visibleCalendarIds가 배열이 아니면 필터링하지 않음
-          return events; 
-      }
-      
-      // event.calendar가 존재하는지 반드시 확인
-      return events.filter(event => event.calendar && visibleCalendarIds.includes(event.calendar.id));
-
-  }, [events, visibleCalendarIds]);
-  */
 
   const filteredEvents = useMemo(() => {
     if (!visibleCalendarIds || !Array.isArray(visibleCalendarIds)) {
@@ -98,8 +85,6 @@ export const CalendarPage = () => {
     });
   }, [colorPatchedEvents, visibleCalendarIds]);
 
-
-
   const onDoubleClick = (event) => {
     openDateModal();
   };
@@ -113,31 +98,48 @@ export const CalendarPage = () => {
     localStorage.setItem('lastView', event);
     setLastView(event);
   };
+  
+  const handleOpenShareModal = (calendarId, link, sharePassword) => { // password -> sharePassword
+      setShareData({ 
+          calendarId, 
+          link, 
+          sharePassword // password -> sharePassword
+      });
+      setIsShareModalOpen(true);
+  };
 
   useEffect(() => {
     startLoadingEvents();
   }, []);
 
   const onEventDrop = ({ event, start, end }) => {
-    // 드래그 앤 드롭으로 변경된 날짜 정보를 기존 이벤트 객체에 업데이트
     const updatedEvent = { ...event, start, end };
-    startSavingEvent(updatedEvent); // 수정 API 호출
+    startSavingEvent(updatedEvent);
     setActiveEvent(updatedEvent);
   }
+
+  const handlePasswordSave = async (calendarToSave) => {
+      try {
+          await startSavingCalendar(calendarToSave);
+          // alert('비밀번호가 저장되었습니다.'); // 사용자에게 알려주고 싶다면 추가
+      } catch (error) {
+          console.error('비밀번호 저장 실패:', error);
+          // Swal.fire('오류', '비밀번호 저장에 실패했습니다.', 'error'); // 에러 알림
+      }
+  };
 
   return (
     <div className="calendar-screen">
       <Navbar />
       <div className="calendar-layout-container">
-        <Sidebar />
+        {/* ❗️ 4. Sidebar 컴포넌트에 onShare prop으로 함수 전달 */}
+        <Sidebar onShare={handleOpenShareModal} />
         <main className="main-content">
           <DndProvider backend={HTML5Backend}>
             <DnDCalendar
-              //key={filteredEvents.length}
               culture='ko'
               localizer={localizer}
               events={filteredEvents}
-              //events={events}
               defaultView={lastView}
               startAccessor="start"
               endAccessor="end"
@@ -151,7 +153,6 @@ export const CalendarPage = () => {
               onDoubleClickEvent={onDoubleClick}
               onSelectEvent={onSelect} 
               onView={onViewChanged}
-              // 👇 드래그 앤 드롭 관련 속성
               resizable
               onEventDrop={onEventDrop}
             />
@@ -161,6 +162,14 @@ export const CalendarPage = () => {
       <CalendarModal />
       <AddCalendarModal />
       <AddSharedEventModal />
+      
+      {/* ❗️ 5. ShareCalendarModal을 렌더링하고 상태와 함수를 props로 전달 */}
+      <ShareCalendarModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        shareData={shareData}
+        onSave={handlePasswordSave}
+      />
     </div>
   );
 };
