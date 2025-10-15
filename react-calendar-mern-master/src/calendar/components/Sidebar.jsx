@@ -97,19 +97,21 @@ export const Sidebar = ({onShare}) => {
   };
   // src/components/Sidebar.jsx
 
-const handleShareClick = async (calendar) => {
+  const handleShareClick = async (calendar) => {
       let calendarData = { ...calendar };
-
-      // 1. DB 필드명인 'sharePassword'가 있는지 확인합니다.
-      if (!calendarData.sharePassword) {
+      
+      // 1. 캘린더에 shareToken이 없는 경우 (최초 공유)
+      if (!calendarData.shareToken) {
           try {
-              console.log("최초 공유: sharePassword와 shareToken을 생성하고 DB에 저장합니다.");
+              console.log("최초 공유: isShared를 true로 설정하여 서버에 토큰 생성을 요청합니다.");
               
-              // API 호출을 통해 백엔드가 비밀번호와 토큰을 모두 생성하고 저장하게 합니다.
-              // calendarData에는 name, color 등 기존 정보만 보냅니다.
-              const savedCalendar = await startSavingCalendar(calendarData);
+              // ❗️ (핵심) 서버로 보낼 데이터에 isShared: true 플래그를 확실하게 추가합니다.
+              const dataToSend = { ...calendarData, isShared: true };
+
+              // 스토어 함수를 호출하고, 서버로부터 shareToken이 포함된 최신 데이터를 반환받습니다.
+              const savedCalendar = await startSavingCalendar(dataToSend);
               
-              // 서버로부터 받은 최신 데이터로 변수를 교체합니다.
+              // 반환받은 최신 데이터로 변수를 교체합니다.
               calendarData = savedCalendar; 
 
           } catch (error) {
@@ -118,17 +120,16 @@ const handleShareClick = async (calendar) => {
           }
       }
 
-      // ❗️ 2. (핵심) 링크를 만들 때 'id' 대신 'shareToken'을 사용합니다.
+      // 2. 최신 데이터에 포함된 'shareToken'을 이용해 올바른 링크를 생성합니다.
       const shareLink = `${window.location.origin}/share-calendar/${calendarData.shareToken}`;
 
-      // ❗️ 3. (핵심) 모달을 열 때 DB 필드명과 일치하는 'sharePassword'를 전달합니다.
+      // 3. 최신 정보를 이용해 모달을 엽니다.
       onShare(
           calendarData.id, 
-          shareLink, // 방금 만든 올바른 링크
+          shareLink,
           calendarData.sharePassword
       );
   };
-
 
 
   return (
