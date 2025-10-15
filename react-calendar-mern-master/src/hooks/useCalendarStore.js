@@ -99,7 +99,7 @@ export const useCalendarStore = () => {
     const clearActiveCalendar = () => {
         dispatch( onClearActiveCalendar() );
     }
-
+/*
     const startSavingCalendar = async( calendarData ) => {
         try {
             const { data } = await calendarApi.post('/calendars/new', calendarData);
@@ -109,7 +109,23 @@ export const useCalendarStore = () => {
             console.log(error);
             Swal.fire('저장 오류', error.response?.data?.msg || '캘린더를 저장할 수 없습니다', 'error');
         }
-    }
+    } */
+   const startSavingCalendar = async (calendarToSave) => {
+        try {
+            const { data } = await calendarApi.put(`/calendars/${calendarToSave.id}`, calendarToSave);
+            
+            console.log('✅ 서버로부터 받은 응답 데이터:', data); 
+            
+            // ❗️ (핵심 수정) data 객체 안의 'calendar' 속성을 사용합니다.
+            dispatch(onUpdateCalendar(data.calendar)); 
+            
+            // ❗️ 반환하는 값도 'data.calendar'여야 합니다.
+            return data.calendar; 
+        } catch (error) {
+            console.log('Error saving calendar', error);
+            throw error;
+        }
+    };
     
     const toggleCalendarVisibility = ( calendarId ) => {
         dispatch( onToggleCalendarVisibility(calendarId) );
