@@ -54,36 +54,36 @@ const aceptarInvitacionCalendario = async (req, res = response) => {
         const { token } = req.params;
         const userId = req.uid;
 
-        // 1. 원본 캘린더를 찾습니다.
-        const originalCalendar = await Calendar.findOne({ shareToken: token });
+        const originalCalendar = await Calendar.findOne({ shareToken: token }).populate('user', 'name');
         if (!originalCalendar) {
             return res.status(404).json({ ok: false, msg: '공유 캘린더를 찾을 수 없습니다.' });
         }
+        
+        // 원본 캘린더 소유자의 이름을 변수에 저장합니다.
+        const originalOwnerName = originalCalendar.user.name;
 
-        // 2. 캘린더 '껍데기'를 복사합니다. (color 속성 포함)
         const newCalendar = new Calendar({
             name: originalCalendar.name,
             notes: `(공유받음) ${originalCalendar.notes || ''}`,
-            color: originalCalendar.color, // 👈 색상 복사 코드 추가
+            color: originalCalendar.color,
             user: userId,
         });
         await newCalendar.save();
 
-        // 3. [핵심] 원본 캘린더에 속한 모든 '이벤트(내용물)'를 찾습니다.
         const originalEvents = await Event.find({ calendar: originalCalendar._id });
 
-        // 4. 찾은 이벤트들을 새로운 캘린더 소속으로 복제합니다.
         if (originalEvents.length > 0) {
             const newEvents = originalEvents.map(event => ({
                 title: event.title,
                 notes: event.notes,
                 start: event.start,
                 end: event.end,
-                user: userId, // 이벤트 소유자도 '나'로 설정
-                calendar: newCalendar._id // 소속을 새로운 캘린더 ID로 변경
+                user: userId,
+                calendar: newCalendar._id,
+                // 👇 [핵심] 복제된 이벤트에 원본 작성자의 이름을 저장합니다.
+                creatorName: originalOwnerName 
             }));
             
-            // 복제된 이벤트들을 DB에 한 번에 저장합니다.
             await Event.insertMany(newEvents);
         }
 
