@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react'; // ❗️ 1. useRef�
 import { useUiStore, useCalendarStore } from '../../hooks';
 import './AddCalendarModal.css';
 
-const defaultColors = ['#D8E9FB', '#F1DBE8', '#DDEAE1', '#D3DAEA', '#B9D3EE'];
+const defaultColors = ['#b9d5f2ff', '#f0cfe3ff', '#cbe5d3ff', '#D3DAEA', '#c4ace6ff'];
 
 export const AddCalendarModal = () => {
     const { isAddCalendarModalOpen, closeAddCalendarModal } = useUiStore();
