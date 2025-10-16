@@ -26,6 +26,9 @@ const EventoSchema = Schema({
         type: Schema.Types.ObjectId,
         ref: 'Calendar',
         required: true
+    },
+    creatorName: {
+        type: String
     }
 
 });
