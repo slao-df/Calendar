@@ -110,9 +110,40 @@ const updateSharePassword = (req, res = response) => {
     res.status(501).json({ ok: false, msg: 'Not implemented yet' });
 }
 
+const deleteCalendar = async (req, res = response) => {
+    const calendarId = req.params.id;
+    const uid = req.uid;
+
+    try {
+        const calendar = await Calendar.findById(calendarId);
+
+        if (!calendar) {
+            return res.status(404).json({ ok: false, msg: '캘린더를 찾을 수 없습니다.' });
+        }
+
+        // 캘린더 소유자만 삭제할 수 있도록 확인합니다.
+        if (calendar.user.toString() !== uid) {
+            return res.status(401).json({ ok: false, msg: '이 캘린더를 삭제할 권한이 없습니다.' });
+        }
+
+        // [핵심] 캘린더를 삭제하기 전에, 관련된 모든 이벤트를 먼저 삭제합니다.
+        await Event.deleteMany({ calendar: calendarId });
+
+        // 이벤트를 모두 삭제한 후, 캘린더를 삭제합니다.
+        await Calendar.findByIdAndDelete(calendarId);
+        
+        res.json({ ok: true, msg: '캘린더가 성공적으로 삭제되었습니다.' });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ ok: false, msg: '서버 오류가 발생했습니다.' });
+    }
+}
+
 module.exports = {
     generarEnlaceCompartir,
     accederCalendarioCompartido,
     updateSharePassword,
-    aceptarInvitacionCalendario
+    aceptarInvitacionCalendario,
+    deleteCalendar,
 }
