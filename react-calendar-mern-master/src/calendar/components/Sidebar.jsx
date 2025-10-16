@@ -16,7 +16,7 @@ export const Sidebar = ({onShare}) => {
   const menuRef = useRef(null);
 
   const { openDateModal, openAddCalendarModal } = useUiStore();
-  const { calendars, startLoadingCalendars, clearActiveEvent, visibleCalendarIds, toggleCalendarVisibility, setActiveCalendar } = useCalendarStore();
+  const { calendars, startLoadingCalendars, clearActiveEvent, visibleCalendarIds, toggleCalendarVisibility, setActiveCalendar, clearActiveCalendar } = useCalendarStore();
   
   const [checkedState, setCheckedState] = useState({});
 
@@ -85,6 +85,11 @@ export const Sidebar = ({onShare}) => {
     setActiveCalendar(calendar);
     openAddCalendarModal();
     setOpenMenuId(null); 
+  };
+
+  const handleAddNewCalendar = () => {
+    clearActiveCalendar(); // ✅ "새 캘린더를 추가할 거야"라고 스토어에 알림 (activeCalendar를 비움)
+    openAddCalendarModal();
   };
 
   const handleCheckboxChange = (calendarId) => {
@@ -178,7 +183,7 @@ export const Sidebar = ({onShare}) => {
           <div className="calendar-list-header">
             <h5 className="calendar-list-heading">내 캘린더</h5>
             <div className="header-icons">
-              <button onClick={openAddCalendarModal}>+</button>
+              <button onClick={handleAddNewCalendar}>+</button>
               <button>⚙️</button>
             </div>
           </div>
