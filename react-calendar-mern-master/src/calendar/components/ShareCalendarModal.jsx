@@ -74,14 +74,14 @@ const ShareCalendarModal = ({ isOpen, onClose, shareData, onSave }) => {
 
         <div className="modal-actions">
           <button className="btn-share" onClick={handleCopyAndSave}>
-            링크, 비밀번호 복사
+            복사
           </button>
-          <button
+          {/* <button
             className="btn-share"
             onClick={() => onShare({ ...shareData, password })}
           >
             공유
-          </button>
+          </button> */}
           <button className="btn-cancel" onClick={onClose}>
             닫기
           </button>
