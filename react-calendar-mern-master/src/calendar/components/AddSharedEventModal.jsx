@@ -90,7 +90,7 @@ export const AddSharedEventModal = () => {
                     </div>
                     
                     <div className="form-group">
-                        <label>참석자</label>
+                        <label>참석자ㅇㅇ</label>
                         <input type="text" className="form-control" placeholder="이름 또는 이메일 주소, 아이디를 입력하세요." />
                     </div>
 
