@@ -194,9 +194,11 @@ export const Sidebar = ({onShare}) => {
                 {/* 캘린더 이름과 체크박스 */}
                 <div className="calendar-info">
                   <input 
-                    type="checkbox" 
+                    type="checkbox"
+                    className="calendar-checkbox"  // 👈 1. 클래스 이름 추가
                     id={calendar.id} 
-                    style={{ accentColor: calendar.color }} 
+                    // 👇 2. style을 CSS 변수를 사용하도록 변경
+                    style={{ '--calendar-color': calendar.color }} 
                     checked={checkedState[calendar.id] || false}
                     onChange={() => toggleCalendarVisibility(calendar.id)}
                   />
@@ -240,10 +242,12 @@ export const Sidebar = ({onShare}) => {
                   {/* 캘린더 이름과 체크박스 */}
                   <div className="calendar-info">
                     <input 
-                      type="checkbox" 
-                      id={`search-${calendar.id}`}
-                      style={{ accentColor: calendar.color }} 
-                      checked={visibleCalendarIds.includes(calendar.id)}
+                      type="checkbox"
+                      className="calendar-checkbox"  // 👈 1. 클래스 이름 추가
+                      id={calendar.id} 
+                      // 👇 2. style을 CSS 변수를 사용하도록 변경
+                      style={{ '--calendar-color': calendar.color }} 
+                      checked={checkedState[calendar.id] || false}
                       onChange={() => toggleCalendarVisibility(calendar.id)}
                     />
                     <label htmlFor={`search-${calendar.id}`}>{ calendar.name }</label>
