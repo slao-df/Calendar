@@ -153,26 +153,35 @@ export const useCalendarStore = () => {
     };
 
 
-    const startDeletingCalendar = async (calendarId) => {
+    const startDeletingCalendar = async () => {
+        // [사용자 확인] SweetAlert2로 정말 삭제할 것인지 물어봅니다.
+        const result = await Swal.fire({
+            title: '캘린더를 삭제하시겠습니까?',
+            text: "이 캘린더와 관련된 모든 일정이 영구적으로 삭제됩니다. 이 작업은 되돌릴 수 없습니다.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: '삭제',
+            cancelButtonText: '취소'
+        });
+        
+        // 사용자가 '취소'를 누르면 함수를 종료합니다.
+        if (!result.isConfirmed) return;
+
         try {
-            // 백엔드 캘린더 삭제
-            await calendarApi.delete(`/calendars/${calendarId}`);
+            // 👇 [핵심] .delete() 메서드를 사용하여 백엔드에 삭제 요청을 보냅니다.
+            // activeCalendar에서 ID를 가져와 사용합니다.
+            await calendarApi.delete(`/calendars/${activeCalendar.id}`);
+            
+            // API 호출이 성공하면 Redux 스토어의 상태를 업데이트합니다.
+            dispatch(onDeleteCalendar());
 
-            // Redux의 캘린더 삭제
-            dispatch(onDeleteCalendar(calendarId));
-
-            // ✅ 현재 events에서 해당 캘린더에 속한 이벤트 제거
-            dispatch(onLoadEvents(events.filter(event => {
-            const id = event.calendar?.id || event.calendar?._id;
-            return id !== calendarId;
-            })));
-
-            Swal.fire('삭제 완료', '캘린더와 해당 일정이 모두 삭제되었습니다.', 'success');
         } catch (error) {
-            console.error('❌ 캘린더 삭제 실패:', error);
+            console.log(error);
+            Swal.fire('삭제 실패', error.response.data?.msg || '캘린더 삭제 중 오류 발생', 'error');
         }
-    };
-
+    }
 
 
 
