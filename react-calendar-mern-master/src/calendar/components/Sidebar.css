@@ -97,6 +97,42 @@
     height: 16px;
     accent-color: #4A90E2;
 }
+/* 체크박스의 기본 모양을 직접 디자인합니다. */
+.calendar-checkbox {
+  /* 브라우저 기본 스타일 숨기기 */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  
+  /* 크기 및 모양 */
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+  cursor: pointer;
+  
+  /* 색상: JSX에서 전달한 CSS 변수를 사용합니다. */
+  border: 1px solid var(--calendar-color);
+  background-color: transparent; /* 기본 배경은 투명 */
+
+  /* 위치 조절 (필요시) */
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+/* [핵심] 마우스를 올렸을 때의 스타일 */
+.calendar-checkbox:hover {
+  /* 배경색을 살짝 투명하게 만들어서 피드백을 줍니다. */
+  background-color: var(--calendar-color);
+  opacity: 0.7;
+}
+
+/* [핵심] 체크되었을 때의 스타일 */
+.calendar-checkbox:checked {
+  background-color: var(--calendar-color);
+  opacity: 1; /* 체크되면 완전히 채웁니다. */
+  /* 간단한 체크 표시 모양 만들기 */
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+}
 
 .add-calendar-button {
     width: 100%;
