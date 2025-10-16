@@ -93,15 +93,23 @@ export const calendarSlice = createSlice({
                 return calendar;
             });
         },
-        onDeleteCalendar: (state, { payload: calendarId }) => { // 👈 삭제 리듀서 추가
-            state.calendars = state.calendars.filter(calendar => calendar._id !== calendarId);
-            state.events = state.events.filter(event => event.calendar._id !== calendarId);
-        },
-        onDeleteCalendar: (state, { payload }) => {
-            state.calendars = state.calendars.filter(
-                cal => cal.id !== payload
-            );
-            if (state.activeCalendar?.id === payload) {
+        // onDeleteCalendar: (state, { payload: calendarId }) => { // 👈 삭제 리듀서 추가
+        //     state.calendars = state.calendars.filter(calendar => calendar._id !== calendarId);
+        //     state.events = state.events.filter(event => event.calendar._id !== calendarId);
+        // },
+        // onDeleteCalendar: (state, { payload }) => {
+        //     state.calendars = state.calendars.filter(
+        //         cal => cal.id !== payload
+        //     );
+        //     if (state.activeCalendar?.id === payload) {
+        //         state.activeCalendar = null;
+        //     }
+        // },
+        onDeleteCalendar: (state) => {
+            if (state.activeCalendar) {
+                // 👇 [핵심] 모든 _id를 id로 변경합니다.
+                state.calendars = state.calendars.filter(cal => cal.id !== state.activeCalendar.id);
+                state.events = state.events.filter(event => event.calendar.id !== state.activeCalendar.id);
                 state.activeCalendar = null;
             }
         },
