@@ -14,7 +14,7 @@ import {
   CalendarToolbar,
   AddCalendarModal,
   AddSharedEventModal,
-  ShareCalendarModal, // ❗️ 1. ShareCalendarModal 컴포넌트 import 추가
+  ShareCalendarModal,
 } from '../';
 
 import { localizer } from '../../helpers';
@@ -25,11 +25,11 @@ const DnDCalendar = withDragAndDrop(Calendar);
 
 export const CalendarPage = () => {
   const { user } = useAuthStore();
-  const { openDateModal } = useUiStore();
+  // ❗️ 1. (핵심) useUiStore에서 AddCalendarModal을 제어할 상태와 함수를 가져옵니다.
+  const { openDateModal, isAddCalendarModalOpen, closeAddCalendarModal } = useUiStore();
   const { events, calendars, setActiveEvent, startLoadingEvents, startSavingEvent, visibleCalendarIds, startSavingCalendar } = useCalendarStore();
   const [lastView, setLastView] = useState(localStorage.getItem('lastView') || 'month');
 
-  // ❗️ 2. 공유 모달의 상태와 데이터를 관리할 useState 추가
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [shareData, setShareData] = useState(null);
 
@@ -99,11 +99,11 @@ export const CalendarPage = () => {
     setLastView(event);
   };
   
-  const handleOpenShareModal = (calendarId, link, sharePassword) => { // password -> sharePassword
+  const handleOpenShareModal = (calendarId, link, sharePassword) => {
       setShareData({ 
           calendarId, 
           link, 
-          sharePassword // password -> sharePassword
+          sharePassword
       });
       setIsShareModalOpen(true);
   };
@@ -121,10 +121,8 @@ export const CalendarPage = () => {
   const handlePasswordSave = async (calendarToSave) => {
       try {
           await startSavingCalendar(calendarToSave);
-          // alert('비밀번호가 저장되었습니다.'); // 사용자에게 알려주고 싶다면 추가
       } catch (error) {
           console.error('비밀번호 저장 실패:', error);
-          // Swal.fire('오류', '비밀번호 저장에 실패했습니다.', 'error'); // 에러 알림
       }
   };
 
@@ -132,7 +130,6 @@ export const CalendarPage = () => {
     <div className="calendar-screen">
       <Navbar />
       <div className="calendar-layout-container">
-        {/* ❗️ 4. Sidebar 컴포넌트에 onShare prop으로 함수 전달 */}
         <Sidebar onShare={handleOpenShareModal} />
         <main className="main-content">
           <DndProvider backend={HTML5Backend}>
@@ -160,10 +157,15 @@ export const CalendarPage = () => {
         </main>
       </div>
       <CalendarModal />
-      <AddCalendarModal />
+      
+      {/* ❗️ 2. (핵심) AddCalendarModal에 isOpen과 onClose props를 전달합니다. */}
+      <AddCalendarModal 
+        isOpen={isAddCalendarModalOpen}
+        onClose={closeAddCalendarModal}
+      />
+      
       <AddSharedEventModal />
       
-      {/* ❗️ 5. ShareCalendarModal을 렌더링하고 상태와 함수를 props로 전달 */}
       <ShareCalendarModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
