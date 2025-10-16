@@ -26,7 +26,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/events', require('./routes/events') );
 
 app.use('/api/calendars', require('./routes/calendars')); // 추가 작성
-
+app.use('/api/calendar', require('./routes/calendarShare'));
 //Escuchar peticiones 
 app.listen( process.env.PORT, () => {
     console.log(`서버 실행 중: ${ process.env.PORT }`);
