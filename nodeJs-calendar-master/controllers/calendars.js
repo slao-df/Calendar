@@ -48,36 +48,39 @@ const createCalendar = async (req, res = response) => {
     }
 }
 
+// controllers/calendars.js
+
 const updateCalendar = async (req, res = response) => {
-    
     const calendarId = req.params.id;
-    const calendarData = req.body;
+    const uid = req.uid;
 
     try {
-        const calendarDB = await Calendar.findById(calendarId);
-
-        if (!calendarDB) {
-            return res.status(404).json({ ok: false, msg: 'Calendar not found' });
+        const calendar = await Calendar.findById(calendarId);
+        if (!calendar) {
+            return res.status(404).json({ ok: false, msg: '캘린더를 찾을 수 없습니다.' });
         }
 
-        if (calendarData.isShared && !calendarDB.shareToken) {
-            // ❗️ 2. 이제 위에서 정의한 함수들을 정상적으로 사용할 수 있습니다.
-            calendarData.shareToken = generateUniqueToken();
-            calendarData.sharePassword = createHashedPassword();
+        if (calendar.user.toString() !== uid) {
+            return res.status(401).json({ ok: false, msg: '권한이 없습니다.' });
         }
 
-        const updatedCalendar = await Calendar.findByIdAndUpdate(calendarId, calendarData, { new: true });
+        // ✅ color를 포함한 전체 필드 업데이트
+        const updatedCalendar = await Calendar.findByIdAndUpdate(
+            calendarId,
+            { $set: req.body },  // color, name, description 등 포함
+            { new: true }
+        );
 
         res.json({
             ok: true,
-            calendar: updatedCalendar
+            calendar: updatedCalendar,
         });
-
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ ok: false, msg: 'Please contact the administrator' });
+        console.error(error);
+        res.status(500).json({ ok: false, msg: '서버 오류' });
     }
 };
+
 
 const deleteCalendar = async (req, res = response) => {
     const calendarId = req.params.id;
