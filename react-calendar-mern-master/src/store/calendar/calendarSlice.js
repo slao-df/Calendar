@@ -3,154 +3,133 @@ import { createSlice } from '@reduxjs/toolkit';
 export const calendarSlice = createSlice({
     name: 'calendar',
     initialState: {
-        isLoadingEvents: true,
-        events: [],
-        calendars: [], 
-        activeEvent: null,
-        visibleCalendarIds: JSON.parse(localStorage.getItem('visibleCalendarIds')) || null,
-        //activeCalendar: null,
+        events: [],              // 모든 일정 목록
+        activeEvent: null,        // 현재 선택된 일정
+        calendars: [],            // 사용자 캘린더 목록
+        activeCalendar: null,     // 현재 선택된 캘린더
+        visibleCalendarIds: [],   // 화면에 표시 중인 캘린더 ID 배열
     },
     reducers: {
-        onSetActiveEvent: ( state, { payload }) => {
+        // ✅ 일정 관련 -----------------------------------------------------
+        onSetActiveEvent: (state, { payload }) => {
             state.activeEvent = payload;
         },
-        onClearActiveEvent: ( state ) => {
-            state.activeEvent = null;
+
+        onAddNewEvent: (state, { payload }) => {
+            state.events.push(payload);
         },
-        onAddNewEvent: ( state, { payload }) => {
-            state.events.push( payload );
-            state.activeEvent = null;
+
+        onUpdateEvent: (state, { payload }) => {
+            state.events = state.events.map(event =>
+                event.id === payload.id ? payload : event
+            );
         },
-        onUpdateEvent: ( state, { payload } ) => {
-            state.events = state.events.map( event => {
-                if ( event.id === payload.id ) {
-                    return payload;
-                }
-                return event;
-            });
-        },
-        onDeleteEvent: ( state ) => {
-            if ( state.activeEvent ) {
-                state.events = state.events.filter( event => event.id !== state.activeEvent.id );
+
+        onDeleteEvent: (state) => {
+            if (state.activeEvent) {
+                state.events = state.events.filter(
+                    event => event.id !== state.activeEvent.id
+                );
                 state.activeEvent = null;
             }
         },
-        /*onLoadEvents: (state, { payload = [] }) => {
-            state.isLoadingEvents = false;
-            payload.forEach( event => {
-                const exists = state.events.some( dbEvent => dbEvent.id === event.id );
-                if ( !exists ) {
-                    state.events.push( event )
-                }
-            })
-        },*/
-        onLoadEvents: (state, { payload = [] }) => {
-            state.isLoadingEvents = false;
-            state.events = [...payload];   // ✅ 새 배열로 덮어써 삭제된 이벤트 반영
+
+        onClearActiveEvent: (state) => {
+            state.activeEvent = null;
         },
 
-        onLogoutCalendar: ( state ) => {
-            state.isLoadingEvents = true;
-            state.events      = [];
-            state.activeEvent = null;
-            state.calendars   = [];
-            state.visibleCalendarIds = null;
-            localStorage.removeItem('visibleCalendarIds');
+        onLoadEvents: (state, { payload = [] }) => {
+            state.events = payload;
         },
-        onAddNewCalendar: ( state, { payload } ) => {
-            state.calendars.push( payload );
-            state.visibleCalendarIds.push(payload.id);
-            localStorage.setItem('visibleCalendarIds', JSON.stringify(state.visibleCalendarIds));
-        },
-        onLoadCalendars: ( state, { payload = [] } ) => {
+
+        // ✅ 캘린더 관련 -----------------------------------------------------
+        onLoadCalendars: (state, { payload = [] }) => {
             state.calendars = payload;
-            //state.visibleCalendarIds = payload.map(cal => cal.id); 
-            if (state.visibleCalendarIds === null) {
-                state.visibleCalendarIds = payload.map(c => c.id);
-                localStorage.setItem('visibleCalendarIds', JSON.stringify(state.visibleCalendarIds));
-            }
+            state.visibleCalendarIds = payload
+                .filter(c => c.visible !== false)
+                .map(c => c.id);
         },
-        onToggleCalendarVisibility: ( state, { payload: calendarId } ) => {
-            const isVisible = state.visibleCalendarIds.includes(calendarId);
-            if (isVisible) {
-                state.visibleCalendarIds = state.visibleCalendarIds.filter(id => id !== calendarId);
-            } else {
-                state.visibleCalendarIds.push(calendarId);
-            }
-            localStorage.setItem('visibleCalendarIds', JSON.stringify(state.visibleCalendarIds));
+
+        onAddNewCalendar: (state, { payload }) => {
+            state.calendars.push(payload);
+            // 새로 추가된 캘린더는 자동으로 보이도록 체크됨
+            state.visibleCalendarIds.push(payload.id);
         },
-        onSetActiveCalendar: (state, { payload }) => { // 👈 활성 캘린더 설정 리듀서
-            state.activeCalendar = payload;
-        },
-        onClearActiveCalendar: (state) => { // 👈 활성 캘린더 초기화 리듀서
-            state.activeCalendar = null;
-        },
+
         onUpdateCalendar: (state, { payload }) => {
-            state.calendars = state.calendars.map(calendar => {
-                if (calendar.id === payload.id) {
-                    return payload; // payload는 서버에서 받은 최신 캘린더 정보
-                }
-                return calendar;
-            });
+            state.calendars = state.calendars.map(c =>
+                c.id === payload.id ? { ...c, ...payload } : c
+            );
         },
-        // onDeleteCalendar: (state, { payload: calendarId }) => { // 👈 삭제 리듀서 추가
-        //     state.calendars = state.calendars.filter(calendar => calendar._id !== calendarId);
-        //     state.events = state.events.filter(event => event.calendar._id !== calendarId);
-        // },
-        // onDeleteCalendar: (state, { payload }) => {
-        //     state.calendars = state.calendars.filter(
-        //         cal => cal.id !== payload
-        //     );
-        //     if (state.activeCalendar?.id === payload) {
-        //         state.activeCalendar = null;
-        //     }
-        // },
+
         onDeleteCalendar: (state) => {
             if (state.activeCalendar) {
-                // 👇 [핵심] 모든 _id를 id로 변경합니다.
-                state.calendars = state.calendars.filter(cal => cal.id !== state.activeCalendar.id);
-                state.events = state.events.filter(event => event.calendar.id !== state.activeCalendar.id);
+                state.calendars = state.calendars.filter(
+                    c => c.id !== state.activeCalendar.id
+                );
+                state.visibleCalendarIds = state.visibleCalendarIds.filter(
+                    id => id !== state.activeCalendar.id
+                );
                 state.activeCalendar = null;
             }
         },
-        updateEventsCalendarColor: (state, { payload: updatedCalendar }) => {
-            const updatedEvents = state.events.map(event =>
-                event.calendar?.id === updatedCalendar.id
-                ? {
-                    ...event,
-                    calendar: {
-                        ...event.calendar,
-                        color: updatedCalendar.color
-                    }
-                    }
-                : event
-            );
 
-            // ✅ 완전히 새 배열로 교체
-            state.events = [...updatedEvents];
+        onSetActiveCalendar: (state, { payload }) => {
+            state.activeCalendar = payload;
         },
-        
 
+        onClearActiveCalendar: (state) => {
+            state.activeCalendar = null;
+        },
 
+        onToggleCalendarVisibility: (state, { payload }) => {
+            if (state.visibleCalendarIds.includes(payload)) {
+                state.visibleCalendarIds = state.visibleCalendarIds.filter(id => id !== payload);
+            } else {
+                state.visibleCalendarIds.push(payload);
+            }
+        },
 
-    }
+        // ✅ 일정 색상 업데이트 (캘린더 색상 변경 시 동기화)
+        updateEventsCalendarColor: (state, { payload }) => {
+            const { id, color } = payload;
+            state.events = state.events.map(event =>
+                event.calendar?.id === id
+                    ? { ...event, calendar: { ...event.calendar, color } }
+                    : event
+            );
+        },
+
+        // ✅ 로그아웃 시 초기화 -----------------------------------------------
+        onLogoutCalendar: (state) => {
+            state.events = [];
+            state.activeEvent = null;
+            state.calendars = [];
+            state.activeCalendar = null;
+            state.visibleCalendarIds = [];
+        },
+    },
 });
 
 
-export const { 
+// ✅ 액션 export
+export const {
     onSetActiveEvent,
-    onClearActiveEvent,
-    onAddNewEvent, 
-    onUpdateEvent, 
+    onAddNewEvent,
+    onUpdateEvent,
     onDeleteEvent,
+    onClearActiveEvent,
     onLoadEvents,
-    onLogoutCalendar,
-    onAddNewCalendar, 
-    onLoadCalendars,  
-    onToggleCalendarVisibility,
+    onLoadCalendars,
+    onAddNewCalendar,
+    onUpdateCalendar,
+    onDeleteCalendar,
     onSetActiveCalendar,
     onClearActiveCalendar,
-    onUpdateCalendar, 
-    onDeleteCalendar,
-    updateEventsCalendarColor, 
+    onToggleCalendarVisibility,
+    updateEventsCalendarColor,
+    onLogoutCalendar,
 } = calendarSlice.actions;
+
+// ✅ 리듀서 export
+export default calendarSlice.reducer;
