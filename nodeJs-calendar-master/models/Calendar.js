@@ -19,17 +19,21 @@ const CalendarSchema = Schema({
     },
     // 🔑 공유 관련 필드
     shareToken: {
-        type: String,   // 공유 링크에 붙일 토큰 (랜덤 문자열)
+        type: String,  
         default: null
     },
     sharePassword: {
-        type: String,   // 비밀번호 (bcrypt로 암호화)
+        type: String,   
         default: null
     },
     isShared: {
         type: Boolean,
         default: false
-    }
+    },
+    participants: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Usuario'
+    }],
 });
 
 CalendarSchema.method('toJSON', function() {
