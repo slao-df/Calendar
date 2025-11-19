@@ -1,0 +1,339 @@
+/* ===== 전체 컨테이너 ===== */
+.sidebar-container {
+  width: 280px;
+  min-width: 280px;
+  padding: 20px;
+  border-right: 1px solid #e0e0e0;
+  background-color: #fafafa;
+  font-family: "Pretendard", sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow: visible;
+  position: relative;
+}
+
+/* ===== 일정쓰기 버튼 ===== */
+.new-event-button {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  background-color: #4e73df;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+}
+
+.new-event-button:hover {
+  background-color: #3d5fc4;
+}
+
+/* ===== 미니 캘린더 컨테이너 ===== */
+.mini-calendar-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mini-calendar-container .react-calendar {
+  width: 100%;
+  max-width: 260px;
+  border: none;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  padding: 10px 6px 18px 6px;
+  text-align: center;
+}
+
+/* ===== 🔧 헤더 정렬 및 디자인 ===== */
+.mini-calendar-container .react-calendar__navfigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  gap: 0px; /* <<, <, >, >> 간격 */
+}
+
+.mini-calendar-container .react-calendar__navigation__label {
+  flex-grow: 1;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1rem;
+  color: #222;
+  line-height: 1;
+  gap: 4px; /* 년과 월 사이의 간격 */
+  white-space: nowrap;
+  
+}
+
+/* “2025년 10월” 한 줄 표시 */
+.mini-calendar-container .react-calendar__navigation__label span {
+  display: inline-block !important;
+  white-space: nowrap !important;
+  line-height: 1;
+}
+
+/* 화살표 버튼 */
+.mini-calendar-container .react-calendar__navigation button {
+  background: none;
+  border: none;
+  color: #333;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 0 2px;
+  min-width: 25px;
+}
+
+.mini-calendar-container .react-calendar__navigation button:hover {
+  color: #4e73df;
+}
+
+/* ===== 요일 영역 ===== */
+.mini-calendar-container .react-calendar__month-view__weekdays {
+  text-align: center;
+  font-weight: 600;
+  color: #444;
+  font-size: 0.8rem;
+  margin-bottom: 6px;
+}
+
+.mini-calendar-container .react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none;
+}
+
+/* ===== 날짜 ===== */
+.mini-calendar-container .react-calendar__tile {
+  font-size: 0.8rem;
+  padding: 8px 0;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+
+.mini-calendar-container .react-calendar__tile:hover {
+  background-color: #eef1ff;
+}
+
+.mini-calendar-container .react-calendar__tile--now {
+  background: none !important; 
+  border: 1px solid #4e73df;
+  border-radius: 8px;
+}
+
+.mini-calendar-container .react-calendar__tile--active {
+  background-color: #4e73df !important;
+  color: #fff !important;
+  font-weight: 700;
+}
+
+/* ===== 월 밖 날짜 ===== */
+.mini-calendar-container .react-calendar__month-view__days__day--neighboringMonth {
+  color: #ccc;
+}
+
+/* ===== 주말 색상 ===== */
+.mini-calendar-container .react-calendar__month-view__weekdays__weekday:nth-child(7),
+.mini-calendar-container .react-calendar__month-view__days__day:nth-child(7n) {
+  color: #e74a3b;
+}
+
+.react-calendar__month-view__days__day:nth-child(7n+6) {
+  color: #4e73df;
+}
+
+/* 내 캘린더 섹션 */
+.calendar-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 2 6px;
+  margin-top: 0px;
+  box-sizing: border-box;
+}
+
+/* 캘린더 목록 */
+.calendar-list {
+  margin-top: -15px; 
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 200px; 
+}
+
+.calendar-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #444;
+  margin: 0;
+  flex: 1;
+  text-align: left;
+}
+
+.calendar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.calendar-actions button {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 1.05rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  padding: 2px;
+}
+
+.calendar-actions button:hover {
+  color: #4A90E2;
+}
+
+
+.calendar-label {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* 체크박스와 텍스트 사이 간격 */
+}
+
+
+.calendar-item {
+  /* position: relative; */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 6px;
+  border-radius: 6px;
+}
+
+.calendar-item:hover {
+  background-color: #f2f2f2;
+}
+
+.calendar-menu {
+  font-size: 18px;
+  color: #666;
+  cursor: pointer;
+  margin-left: 4px;
+}
+
+.calendar-menu:hover {
+  color: #333;
+}
+
+/* ⋯ 클릭 시 표시되는 팝업 메뉴 */
+.calendar-menu-popup {
+  position: absolute;
+  /* right: -140px;
+  top: 0; */
+  left: 265px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  width: 130px;
+  z-index: 999;
+  padding: 6px 0;
+}
+
+.calendar-menu-popup hr {
+  border: none;
+  border-top: 1px solid #898989;
+  margin: 4px 0;
+}
+/* 공유하기 버튼
+div.calendar-menu-popup button:focus {
+  outline: none !important;
+  border: none !important;
+  box-shadow: none !important;
+} */
+
+
+
+.menu-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #333;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background-color: #f7f7f7;
+}
+
+
+/* 캘린더 검색창 스타일 */
+.calendar-search-container {
+  position: relative;
+  padding: 0 0px;
+  margin-top: 0px;
+  margin-bottom: 8px;
+}
+
+.calendar-search-container .fa-search {
+  position: absolute;
+  left: 8px; /* ❗️ padding: 0 15px 이므로 left 15px로 수정 */
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  font-size: 14px;
+  
+}
+
+/* ▼▼▼ [수정] 검색창 밑줄 스타일 ▼▼▼ */
+.calendar-search-input {
+  width: 100%;
+  padding: 8px 32px 8px 32px; 
+  border: none;
+  border-bottom: 1px solid #ccc; /* 기본 밑줄 */
+  background-color: transparent; /* 배경 없음 */
+  border-radius: 0; /* 모서리 각진 형태 */
+  
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.calendar-search-input::placeholder {
+  color: #999;
+}
+
+/* ▼▼▼ [수정] 포커스 시 밑줄 스타일 ▼▼▼ */
+.calendar-search-input:focus {
+  border-bottom-color: #007bff; /* (프로젝트 메인 색상) */
+  box-shadow: none; /* 그림자 제거 */
+}
+
+.calendar-search-clear {
+  position: absolute;
+  right: 0px; /* 컨테이너 오른쪽 여백 15px에 맞춤 */
+  top: 50%;
+  transform: translateY(-50%);
+  
+  background: transparent;
+  border: none;
+  padding: 5px;
+  cursor: pointer;
+  
+  color: #999;
+  font-size: 12px; /* '✕' 문자가 작아서 조금 키움 */
+  line-height: 1; /* 줄간격 정렬 */
+}
+
+.calendar-search-clear:hover {
+  color: #333;
+}

@@ -1,0 +1,151 @@
+/* 🔹 배경 오버레이 */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 2000;
+}
+
+/* 🔹 모달 본체 */
+.modal-container {
+  position: relative;
+  width: 520px;
+  max-width: 95vw;
+  background: #fff;
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  z-index: 2100;
+  transition: all 0.2s ease;
+}
+
+/* ✅ 넓은 버전 */
+.modal-container.wide {
+  width: 600px;
+}
+
+.modal-title {
+  margin: 0 0 12px;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.modal-divider {
+  border: 0;
+  border-top: 1px solid #898989;
+  margin: 10px 0 16px;
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 🔹 입력 라벨 */
+.modal-label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+/* 🔹 텍스트 입력 */
+.modal-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* 캘린더 드롭다운(select) 화살표 커스텀 */
+select.modal-input {
+  /* 기본 브라우저 화살표 숨기기 */
+  -webkit-appearance: none;  /* Safari, Chrome */
+  -moz-appearance: none;   /* Firefox */
+  appearance: none;        /* 표준 */
+
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23666'%3E%3Cpath d='M8 10.75a.75.75 0 01-.53-.22l-3.25-3.25a.75.75 0 011.06-1.06L8 8.94l2.72-2.72a.75.75 0 011.06 1.06l-3.25 3.25a.75.75 0 01-.53.22z'/%3E%3C/svg%3E");
+  
+  background-repeat: no-repeat;
+  background-size: 16px 16px; /* 아이콘 크기 */
+
+  background-position: right 13px center;
+
+  /* 텍스트가 화살표를 덮지 않도록 오른쪽 패딩 추가 */
+  padding-right: 40px; 
+}
+
+/* (참고) Internet Explorer 10/11용 네이티브 화살표 숨기기 */
+select.modal-input::-ms-expand {
+  display: none;
+}
+
+/* 🔹 시작/종료 한 줄 */
+.datetime-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.datetime-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 🔹 메모 영역 */
+.modal-textarea {
+  width: 100%;
+  min-height: 80px;
+  resize: vertical;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 14px;
+}
+
+/* 🔹 버튼 영역 */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+/* 🔹 버튼 기본 */
+.modal-btn {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* 🔹 기본 버튼 */
+.modal-btn.primary {
+  background: #4e73df;
+  color: white;
+}
+
+/* 🔹 취소 버튼 */
+.modal-btn.ghost {
+  background: #f2f2f2;
+  color: #333;
+}
+.modal-btn.danger {
+  background-color: #d9534f; /* 기본 붉은색 배경 */
+  color: white;
+  border-color: #d43f3a;
+}
+
+/* ▼▼▼ [수정 또는 추가] 이 호버 스타일 ▼▼▼ */
+.modal-btn.danger:hover {
+  background-color: #c9302c; /* 호버 시 약간 더 진한 붉은색 */
+  border-color: #ac2925;
+}
+

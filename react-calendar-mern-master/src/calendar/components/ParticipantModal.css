@@ -1,0 +1,221 @@
+/* src/calendar/components/ParticipantModal.css */
+
+.participant-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1050;
+}
+
+.participant-modal {
+  background: white;
+  padding: 24px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 400px; /* 모달 너비 */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  animation: modal-fade-in 0.2s ease-out;
+}
+
+.participant-modal-title {
+  margin: 0 0 16px 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-align: center;
+  color: #333;
+}
+
+/* ================================= */
+/* === [신규] 일괄 작업 버튼 영역 === */
+/* ================================= */
+.bulk-actions {
+  padding: 10px 15px;
+  border-bottom: 1px solid #eee; /* 목록과의 구분선 */
+  display: flex;
+  gap: 10px; /* 버튼 사이 간격 */
+  margin-bottom: 10px; /* 목록과의 간격 */
+}
+
+.bulk-action-btn {
+  padding: 6px 12px;
+  font-size: 0.85rem; /* 버튼 글자 크기 */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  background-color: #f8f9fa; /* 버튼 배경색 */
+  transition: background-color 0.2s; /* 호버 효과 */
+}
+.bulk-action-btn.grant { 
+  border-color: #198754; /* 초록색 테두리 */
+  color: #198754;      /* 초록색 글자 */
+}
+.bulk-action-btn.revoke { 
+  border-color: #dc3545; /* 빨간색 테두리 */
+  color: #dc3545;      /* 빨간색 글자 */
+}
+
+.bulk-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bulk-action-btn:not(:disabled):hover {
+  background-color: #e9ecef; /* 호버 시 배경색 */
+}
+
+
+/* ================================= */
+/* === 참여자 목록 스타일 === */
+/* ================================= */
+.participant-list {
+  max-height: 300px; /* 목록이 길어지면 스크롤 */
+  overflow-y: auto;
+  margin-bottom: 20px;
+  border: 1px solid #eee;
+  border-radius: 6px;
+}
+
+.participant-item {
+  display: flex;
+  /* justify-content: space-between; */ /* 체크박스 추가로 삭제 또는 조정 */
+  align-items: center; /* 세로 중앙 정렬 */
+  padding: 10px 12px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 14px;
+  color: #555;
+}
+.participant-item:last-child {
+  border-bottom: none;
+}
+
+/* ✅ [신규] 참여자 아이템 내 체크박스 */
+.participant-checkbox {
+  margin-right: 10px; /* 이름과의 간격 */
+  cursor: pointer;
+  width: 16px;        /* 체크박스 크기 */
+  height: 16px;
+  vertical-align: middle; /* 다른 요소와 세로 정렬 */
+}
+
+/* ✅ [신규] 선택된 아이템 배경 강조 */
+.participant-item.selected {
+  background-color: #e7f1ff; /* 선택 시 배경색 */
+}
+
+.participant-item.owner {
+  background-color: #fcf8e3; /* 소유자 강조 배경 */
+  font-weight: 600;
+}
+
+.role-tag {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 10px;
+  background-color: #e9ecef;
+  color: #495057;
+  margin-left: auto; /* ✅ 역할 태그를 오른쪽 끝으로 */
+}
+.owner .role-tag {
+  background-color: #f0ad4e;
+  color: white;
+}
+
+.no-participants {
+  text-align: center;
+  padding: 20px;
+  color: #888;
+  font-size: 14px;
+}
+
+/* ================================= */
+/* === 닫기 버튼 === */
+/* ================================= */
+.participant-close-btn {
+  width: auto;
+  padding: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background-color: #6c757d; /* 닫기 버튼 색상 */
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.participant-close-btn:hover {
+  background-color: #5a6268;
+}
+
+
+/* [신규] 체크박스 자리 표시자 (보기 모드 정렬용) */
+.checkbox-placeholder {
+  width: 16px; /* 체크박스와 동일한 너비 */
+  height: 16px;
+  margin-right: 10px;
+}
+
+/* [신규] 모달 하단 버튼 영역 */
+.modal-footer-buttons {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end; /* 기본적으로 오른쪽 정렬 */
+  gap: 10px;
+}
+
+/* [신규] 편집 권한 설정 버튼 (보기 모드) */
+.participant-edit-btn {
+  /* 필요 시 스타일 추가 */
+  padding: 8px 15px;
+  font-size: 14px;
+  border: 1px solid #0d6efd;
+  color: #0d6efd;
+  background-color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-right: auto; /* 이 버튼만 왼쪽으로 */
+}
+.participant-edit-btn:hover {
+  background-color: #f8f9fa;
+}
+
+/* [신규] 취소 버튼 (편집 모드) */
+.participant-cancel-btn {
+  padding: 10px 15px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #6c757d; /* 회색 텍스트 */
+  background-color: #f8f9fa; /* 밝은 배경 */
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.participant-cancel-btn:hover {
+  background-color: #e9ecef;
+}
+
+/* [신규] 저장 버튼 (편집 모드) */
+.participant-save-btn {
+  padding: 10px 15px;
+  font-size: 15px;
+  font-weight: 600;
+  color: white;
+  background-color: #0d6efd; /* 파란색 배경 */
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.participant-save-btn:hover {
+  background-color: #0b5ed7;
+}
+/* (모달 애니메이션 - 선택 사항) */
+@keyframes modal-fade-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}

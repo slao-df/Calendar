@@ -1,0 +1,167 @@
+/* LoginPage.css */
+
+/* 전체 배경 설정 */
+.login-background {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f4f7f9;
+  font-family: 'Pretendard', sans-serif; /* 깔끔한 폰트로 변경 (없으면 기본 폰트) */
+}
+
+/* 로그인 카드 컨테이너 */
+.login-container {
+  background-color: #ffffff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+/* 로고 */
+.logo-container {
+  margin-bottom: 30px;
+}
+
+.logo-container h1 {
+  font-size: 28px;
+  color: #333;
+  margin: 0;
+}
+
+/* 입력 필드 그룹 */
+.input-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.input-group i {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 12px 12px 40px; /* 아이콘 공간 확보 */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #4A90E2; /* 기본 색상 */
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+}
+
+/* 자동 로그인, 비밀번호 찾기 옵션 */
+.options-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  font-size: 14px;
+}
+
+.options-group label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: #555;
+}
+
+.options-group input[type="checkbox"] {
+  margin-right: 8px;
+  accent-color: #4A90E2; /* 기본 색상 */
+}
+
+.options-group a {
+  color: #555;
+  text-decoration: none;
+}
+
+.options-group a:hover {
+  color: #4A90E2; /* 기본 색상 */
+}
+
+/* 로그인 버튼 */
+.login-button {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 8px;
+  background-color: #4A90E2; /* 기본 색상 */
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.login-button:hover {
+  background-color: #357ABD; /* 호버 시 살짝 어둡게 */
+}
+
+/* "또는" 구분선 */
+.separator {
+  margin: 25px 0;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #aaa;
+}
+
+.separator::before,
+.separator::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid #898989;
+}
+
+.separator:not(:empty)::before {
+  margin-right: .25em;
+}
+
+.separator:not(:empty)::after {
+  margin-left: .25em;
+}
+
+/* 소셜 로그인 버튼 */
+.social-button {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  background-color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  transition: background-color 0.3s;
+}
+
+.social-button:hover {
+  background-color: #f9f9f9;
+}
+
+/* 회원가입 링크 */
+.signup-link {
+  margin-top: 25px;
+  font-size: 14px;
+  color: #555;
+}
+
+.signup-link a {
+  color: #4A90E2; /* 기본 색상 */
+  font-weight: bold;
+  text-decoration: none;
+}

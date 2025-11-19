@@ -1,0 +1,108 @@
+/* ===== 오버레이 ===== */
+.share-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+/* ===== 모달 본체 ===== */
+.share-modal {
+  background: #fff;
+  border-radius: 10px;
+  padding: 28px 32px;
+  width: 380px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  font-family: "Pretendard", sans-serif;
+}
+
+.share-modal-title {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 18px;
+}
+
+/* ===== 입력 구역 ===== */
+.share-result {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.share-result label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.share-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  background-color: #fafafa;
+  outline: none;
+  color: #333;
+}
+
+.share-input:focus {
+  border-color: #4e73df;
+  background-color: #fff;
+}
+
+/* ===== 버튼 영역 ===== */
+.share-btn-container {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+/* 공통 버튼 스타일 */
+.share-btn-container button {
+  border: none;
+  border-radius: 6px;
+  padding: 10px 22px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.share-btn-container button:active {
+  transform: scale(0.97);
+}
+
+/* 파란색 복사 버튼 */
+.share-copy-btn {
+  background-color: #4e73df;
+  color: white;
+}
+
+.share-copy-btn:hover {
+  background-color: #3759c8;
+}
+
+/* 보라색 저장 버튼 */
+.share-save-btn {
+  background-color: #6f42c1;
+  color: white;
+}
+
+.share-save-btn:hover {
+  background-color: #5a32a8;
+}
+
+/* 회색 닫기 버튼 */
+.share-close-btn {
+  background-color: #e4e6eb;
+  color: #333;
+}
+
+.share-close-btn:hover {
+  background-color: #d1d3d8;
+}

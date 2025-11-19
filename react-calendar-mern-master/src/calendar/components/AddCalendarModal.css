@@ -1,0 +1,234 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.35);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.modal-container {
+  background: #fff;
+  border-radius: 10px;
+  width: 440px;
+  padding: 30px 40px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.modal-divider {
+  border: none;
+  border-top: 1px solid #898989;
+  margin-bottom: 20px;
+}
+
+.modal-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.modal-input,
+.modal-textarea {
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 0.95rem;
+  margin-bottom: 20px;
+  resize: none;
+  transition: border-color 0.2s;
+}
+
+.modal-input:focus,
+.modal-textarea:focus {
+  outline: none;
+  border-color: #4a90e2;
+}
+
+.color-options {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.color-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: transform 0.2s, border 0.2s;
+}
+
+.color-circle:hover {
+  transform: scale(1.1);
+}
+
+.color-circle.selected {
+  border: 2px solid #4a90e2;
+  box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+}
+
+.color-circle.add {
+  border: 2px dashed #ccc;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  color: #777;
+  background: #fafafa;
+}
+
+.color-circle.add:hover {
+  background: #f1f1f1;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 25px;
+}
+
+.save-btn {
+  background: #4a6cff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.save-btn:hover {
+  background: #3956d5;
+}
+
+.cancel-btn {
+  background: #888;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.cancel-btn:hover {
+  background: #666;
+}
+/* ✅ 색상 삭제 버튼 디자인 */
+.color-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #fff;
+  border: 1px solid #ccc;
+  color: #555;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 11px;
+  line-height: 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  transition: all 0.2s;
+}
+
+.modal-btn.danger {
+  background-color: #d9534f; /* 붉은색 배경 */
+  color: white;
+  border-color: #d43f3a; /* 약간 더 진한 테두리 */
+}
+.modal-btn.danger:hover {
+  background-color: #c9302c;
+  border-color: #ac2925;
+}
+
+/* 취소 버튼 (.ghost) */
+.modal-btn.ghost {
+  background-color: transparent;
+  color: #6c757d;
+  border-color: #ced4da;
+}
+.modal-btn.ghost:hover {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+/* 저장 버튼 (.primary) */
+.modal-btn.primary {
+  background-color: #4e73df; /* 파란색 배경 */
+  color: white;
+  border-color: #4e73df;
+}
+.modal-btn.primary:hover {
+  background-color: #3d5fc4;
+  border-color: #3d5fc4;
+}
+/* 🎨 컬러 팔레트 팝업 */
+.color-picker-popup {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+
+.modal-tabs {
+  display: flex;
+  background-color: #ffffff; /* 더 밝은 배경 */
+  border-bottom: 1px solid #dee2e6;
+}
+
+.modal-tab-btn {
+  flex: 1;
+  padding: 12px 15px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  background-color: transparent;
+  color: #6c757d; /* 비활성 색상 */
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+  margin-bottom: -1px; /* hr과 겹치도록 */
+}
+
+.modal-tab-btn.active {
+  color: #0d6efd; /* 활성 색상 */
+  border-bottom-color: #0d6efd;
+  background-color: #fff;
+}
+
+.modal-tab-btn:hover:not(.active) {
+  background-color: #f1f3f5;
+  color: #212529;
+}
