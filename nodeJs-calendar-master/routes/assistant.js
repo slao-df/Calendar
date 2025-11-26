@@ -1,9 +1,10 @@
 // routes/assistant.js
-// 자연어 → 내부 MongoDB Event 생성
+// 자연어 → 내부 MongoDB Event 생성 + 비서형 추천
 // - user / calendar 자동 추론
 // - 캘린더 이름 부분 매칭
 // - 한 번짜리 / 매주 반복 일정 구분
 // - 한국어 자연어 파서(월/일/요일/시간/캘린더명/제목)
+// - intent: 'create' / 'suggest-time'
 
 const router = require('express').Router();
 const mongoose = require('mongoose');
@@ -188,6 +189,74 @@ function allWeekdaysOfMonth(year, month /*1-12*/, weekday /*0-6*/) {
   return out;
 }
 
+// ───────── 의도(intent) 판단 ─────────
+function detectIntent(text = '', parsed = {}) {
+  const t = text.trim();
+
+  // 추천 관련 키워드
+  const suggestKeywords = ['추천', '괜찮', '좋을까', '어떤 요일', '언제가 좋'];
+  if (suggestKeywords.some((k) => t.includes(k))) {
+    return 'suggest-time';
+  }
+
+  // 생성 관련 키워드 + 날짜/요일이 있는 경우
+  const createKeywords = ['추가해', '등록해', '잡아줘', '만들어줘', '생성해', '추가해줘'];
+  const hasDateInfo =
+    parsed.month != null || parsed.day != null || parsed.weekday != null;
+
+  if (createKeywords.some((k) => t.includes(k)) && hasDateInfo) {
+    return 'create';
+  }
+
+  // 기본값: 날짜 정보가 있으면 생성, 없으면 추천
+  return hasDateInfo ? 'create' : 'suggest-time';
+}
+
+// ───────── 요일/시간 추천 ─────────
+async function suggestWeeklyTimes({ userId, baseDate = new Date(), durationMin = 60 }) {
+  const year = baseDate.getFullYear();
+  const monthIdx = baseDate.getMonth(); // 0~11
+
+  const startOfMonth = new Date(year, monthIdx, 1, 0, 0, 0, 0);
+  const endOfMonth = new Date(year, monthIdx + 1, 0, 23, 59, 59, 999);
+
+  const events = await Event.find({
+    user: userId,
+    start: { $gte: startOfMonth, $lte: endOfMonth },
+  }).lean();
+
+  // 요일별 "바쁨 정도" 점수 (밀리초 합)
+  const busyScore = [0, 0, 0, 0, 0, 0, 0]; // 일~토
+
+  for (const ev of events) {
+    const s = new Date(ev.start);
+    const e = new Date(ev.end || ev.start);
+    const wd = s.getDay();
+    const diff = Math.max(e - s, 0);
+    busyScore[wd] += diff;
+  }
+
+  // 평일만 대상으로 가장 덜 바쁜 2개 추천
+  const weekdayNames = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일'];
+  const candidates = [1, 2, 3, 4, 5]; // 월~금
+
+  const sorted = candidates
+    .slice()
+    .sort((a, b) => busyScore[a] - busyScore[b])
+    .slice(0, 2);
+
+  const suggestions = sorted.map((wd, idx) => ({
+    year,
+    month: monthIdx + 1,           // 1~12
+    weekday: wd,                   // 1=월 ~ 5=금
+    startHour: idx === 0 ? 15 : 10,
+    endHour: idx === 0 ? 16 : 11,
+    label: `${weekdayNames[wd]} ${idx === 0 ? '오후 3시' : '오전 10시'}`,
+  }));
+
+  return { year, month: monthIdx + 1, suggestions };
+}
+
 // ───────── 사용자 자동 추론 ─────────
 async function resolveUserId(req) {
   if (req.uid) return req.uid; // JWT 미들웨어가 세팅한 값
@@ -311,7 +380,38 @@ async function handler(req, res) {
     const em = Number(endMinute ?? parsed.em ?? 0);
     const title = (titleInput ?? parsed.title ?? '일정').toString();
 
-    // 4) 캘린더 결정
+    // 4) intent 판단 (추천 vs 생성)
+    const intent = detectIntent(rawText, parsed);
+
+    // ───────── intent === 'suggest-time' : 요일/시간 추천만 ─────────
+    if (intent === 'suggest-time') {
+      const { suggestions } = await suggestWeeklyTimes({
+        userId,
+        baseDate: now,
+        durationMin: 60,
+      });
+
+      const koWeek = ['일', '월', '화', '수', '목', '금', '토'];
+      const msgLines = suggestions.map(
+        (s, idx) =>
+          `${idx + 1}. ${koWeek[s.weekday]}요일 ${s.label.split(' ')[1]}`
+      );
+      const answer =
+        `이번 달 일정 기준으로는\n` +
+        msgLines.join('\n') +
+        `\n쪽이 가장 여유 있어 보여요.\n원하는 시간을 선택해서 다시 말씀해 주세요.`;
+
+      return res.json({
+        ok: true,
+        mode: 'suggest-time',
+        answer,
+        suggestions,
+      });
+    }
+
+    // ───────── intent === 'create' : 실제 일정 생성 ─────────
+
+    // 5) 캘린더 결정
     const calendarId = await resolveCalendarId({
       userId,
       calendarId: calendarIdInput,
@@ -332,7 +432,7 @@ async function handler(req, res) {
       });
     }
 
-    // 5) 디버그 로그
+    // 6) 디버그 로그
     console.log('[ASSISTANT PARSE]', {
       body: req.body,
       parsed,
@@ -341,7 +441,7 @@ async function handler(req, res) {
 
     const isEveryWeek = /매주/.test(rawText);
 
-    // 6) 유효성 검사
+    // 7) 유효성 검사
     if (!month || Number.isNaN(month) || month < 1 || month > 12) {
       return res.status(400).json({ ok: false, msg: 'month(1~12)가 필요합니다.' });
     }
@@ -383,11 +483,12 @@ async function handler(req, res) {
         .json({ ok: false, msg: '날짜 또는 요일 정보를 이해하지 못했습니다.' });
     }
 
-    // 7) DB 저장
+    // 8) DB 저장
     const result = await Event.insertMany(docs, { ordered: true });
 
     return res.json({
       ok: true,
+      mode: 'create',
       inserted: result.length,
       user: userId,
       calendar: calendarId,
