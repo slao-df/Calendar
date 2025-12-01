@@ -1,36 +1,51 @@
 // src/hooks/useAssistant.js
 
 /**
- * AI 도우미에게 자연어 명령을 보내서
- * 일정 자동 생성 API(/assistant)를 호출하는 헬퍼
+ * AI 도우미에게 자연어 명령 또는 구조화 payload를 보내서
+ * /assistant 엔드포인트를 호출하는 헬퍼
+ *
+ * 사용 예시:
+ *   await askAssistant("11월 매주 화요일 13:00~14:00 '회사' 캘린더에 회의 추가해줘");
+ *
+ *   await askAssistant({
+ *     text: "주간 회의 일정 만들어줘",
+ *     year: 2025,
+ *     month: 11,
+ *     weekday: 2,
+ *   });
  *
  * 반환 형식:
  *   { ok: true,  ...서버에서 내려준 데이터 }
  *   { ok: false, message: '에러 메시지' }
  */
-export async function askAssistant(prompt, options = {}) {
-  const API_URL = import.meta.env.VITE_API_URL;   // 예: "http://localhost:4000/api"
-  const token   = localStorage.getItem('token') || '';
+export async function askAssistant(promptOrPayload, options = {}) {
+  const API_URL = import.meta.env.VITE_API_URL; // 예: "http://localhost:4000/api"
+  const token = localStorage.getItem('token') || '';
 
-  // 혹시라도 VITE_API_URL이 비어 있으면 바로 실패 처리
   if (!API_URL) {
     console.error('[assistant] VITE_API_URL 이 설정되지 않았습니다.');
     return { ok: false, message: 'API 서버 주소가 설정되지 않았습니다.' };
   }
 
-  try {
-    // 서버에 보낼 payload 구성
-    const payload = {
-      text: prompt,   // 서버에서 req.body.text 로 받음
-      // 필요하다면 명시적으로 넘길 추가 옵션들
-      ...(options.calendarId       ? { calendarId: options.calendarId }             : {}),
-      ...(options.calendarSummary  ? { calendarSummary: options.calendarSummary }   : {}),
-      ...(options.year             ? { year: options.year }                         : {}),
-      ...(options.month            ? { month: options.month }                       : {}),
-      ...(options.weekday          ? { weekday: options.weekday }                   : {}),
+  // payload 구성: 문자열 / 객체 둘 다 지원
+  let payload;
+  if (typeof promptOrPayload === 'string') {
+    payload = {
+      text: promptOrPayload,
+      ...(options.calendarId ? { calendarId: options.calendarId } : {}),
+      ...(options.calendarSummary ? { calendarSummary: options.calendarSummary } : {}),
+      ...(options.year ? { year: options.year } : {}),
+      ...(options.month ? { month: options.month } : {}),
+      ...(options.weekday ? { weekday: options.weekday } : {}),
     };
+  } else if (promptOrPayload && typeof promptOrPayload === 'object') {
+    // 이미 { text, year, month, ... } 형태인 경우 그대로 보냄
+    payload = { ...promptOrPayload };
+  } else {
+    payload = { text: String(promptOrPayload ?? '') };
+  }
 
-    // 실제 요청
+  try {
     const resp = await fetch(`${API_URL}/assistant`, {
       method: 'POST',
       headers: {
@@ -40,7 +55,6 @@ export async function askAssistant(prompt, options = {}) {
       body: JSON.stringify(payload),
     });
 
-    // 1) HTTP 레벨 에러 (404, 500 등)
     if (!resp.ok) {
       const errText = await resp.text().catch(() => '');
       console.error('[assistant] http error', resp.status, errText);
@@ -50,7 +64,6 @@ export async function askAssistant(prompt, options = {}) {
       };
     }
 
-    // 2) JSON 파싱 에러 구분
     let data;
     try {
       data = await resp.json();
@@ -60,16 +73,13 @@ export async function askAssistant(prompt, options = {}) {
       return { ok: false, message: '서버 응답 형식이 올바르지 않습니다.' };
     }
 
-    // 3) 서버가 내려준 형식에 맞춰 ok 여부 판단
     if (data && typeof data.ok === 'boolean') {
-      return data;   // 예: { ok:true, inserted:4, ... }
+      return data; // 예: { ok:true, mode:'create'|'suggest-time', ... }
     }
 
-    // ok 필드가 없는 경우도 방어
+    // ok 필드가 없으면 성공으로 간주
     return { ok: true, ...data };
-
   } catch (err) {
-    // 진짜 네트워크 단에서의 오류일 때만 여기로 옴
     console.error('[assistant] fetch error', err);
     return { ok: false, message: '서버 연결에 실패했어요.' };
   }
