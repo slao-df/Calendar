@@ -11,7 +11,7 @@
 //   // react-big-calendar가 (date, culture)를 넘겨주기 때문에 인자를 받아야 함
 //   startOfWeek: (date, culture) =>
 //     startOfWeek(date, {
-//       weekStartsOn: 1,                      // 월요일 시작
+//       weekStartsOn: 1,                 // 월요일 시작
 //       locale: locales[culture] || ko,
 //     }),
 //   getDay,
