@@ -1,9 +1,16 @@
+// helpers/jwt.js
 const jwt = require('jsonwebtoken');
 
-// JWT 토큰 생성 함수
-const generateJWT = (uid, name) => {
+// JWT 토큰 생성 함수 (email은 선택값)
+const generateJWT = (uid, name, email = null) => {
   return new Promise((resolve, reject) => {
+    // 기본 payload
     const payload = { uid, name };
+
+    // email이 넘어온 경우에만 payload에 추가
+    if (email) {
+      payload.email = email;
+    }
 
     jwt.sign(
       payload,

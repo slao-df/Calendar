@@ -18,14 +18,14 @@ import { useCalendarStore, useAuthStore } from '../../hooks';
 
 const DragAndDropCalendar = withDragAndDrop(Calendar);
 
-// ✅ 커스텀 localizer (상단 월/년 형식 변경 포함)
+// 커스텀 localizer (상단 월/년 형식 변경 포함)
 const locales = { ko };
 const customLocalizer = dateFnsLocalizer({
   format: (date, formatStr, options) => {
     if (formatStr === 'MMMM yyyy') {
       const year = date.getFullYear();
       const month = date.toLocaleString('ko-KR', { month: 'long' });
-      return `${year}년 ${month}`; // ✅ 년-월 순서로 표시
+      return `${year}년 ${month}`; // 년-월 순서로 표시
     }
     return format(date, formatStr, { locale: ko });
   },

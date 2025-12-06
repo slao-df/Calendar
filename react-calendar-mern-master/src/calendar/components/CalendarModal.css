@@ -22,7 +22,7 @@
   transition: all 0.2s ease;
 }
 
-/* ✅ 넓은 버전 */
+/* 넓은 버전 */
 .modal-container.wide {
   width: 600px;
 }

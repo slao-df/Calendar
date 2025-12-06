@@ -19,7 +19,7 @@ export default function AssistantFab({ onClick }) {
         color: "#fff",
         boxShadow: "0 8px 24px rgba(0,0,0,0.18)",
         cursor: "pointer",
-        zIndex: 1300,          /* ✅ 모달(1001)보다 위 */
+        zIndex: 1300,          /* 모달(1001)보다 위 */
         display: "flex",
         alignItems: "center",
         justifyContent: "center",

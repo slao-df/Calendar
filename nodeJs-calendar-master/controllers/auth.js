@@ -1,3 +1,4 @@
+// controllers/auth.js
 const { response } = require('express');
 const bcrypt = require('bcryptjs');
 const { validationResult } = require('express-validator');
@@ -27,13 +28,14 @@ const createUser = async (req, res = response) => {
 
     await user.save();
 
-    // JWT 생성
-    const token = await generateJWT(user.id, user.name);
+    // JWT 생성 시 email까지 포함
+    const token = await generateJWT(user.id, user.name, user.email);
 
     res.status(201).json({
       ok: true,
       uid: user.id,
       name: user.name,
+      email: user.email,     //프론트로 이메일 내려줌
       token,
     });
   } catch (error) {
@@ -70,13 +72,14 @@ const loginUser = async (req, res = response) => {
       });
     }
 
-    // JWT 생성
-    const token = await generateJWT(user.id, user.name);
+    // JWT 생성 시 email까지 포함
+    const token = await generateJWT(user.id, user.name, user.email);
 
     res.json({
       ok: true,
       uid: user.id,
       name: user.name,
+      email: user.email,     //프론트로 이메일 내려줌
       token,
     });
   } catch (error) {
@@ -90,17 +93,35 @@ const loginUser = async (req, res = response) => {
 
 // 토큰 재검증 (재발급)
 const revalidateToken = async (req, res = response) => {
-  const { uid, name } = req;
+  try {
+    const { uid } = req;
 
-  // 새로운 JWT 생성
-  const token = await generateJWT(uid, name);
+    // uid 기준으로 현재 사용자 정보 다시 조회
+    const user = await User.findById(uid);
+    if (!user) {
+      return res.status(404).json({
+        ok: false,
+        msg: '사용자를 찾을 수 없습니다.',
+      });
+    }
 
-  res.json({
-    ok: true,
-    uid,
-    name,
-    token,
-  });
+    // 새로운 JWT 생성 (email 포함)
+    const token = await generateJWT(user.id, user.name, user.email);
+
+    res.json({
+      ok: true,
+      uid: user.id,
+      name: user.name,
+      email: user.email,   // 재발급 시에도 이메일 포함
+      token,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({
+      ok: false,
+      msg: '서버 오류가 발생했습니다. 관리자에게 문의하세요.',
+    });
+  }
 };
 
 module.exports = {

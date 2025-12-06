@@ -21,7 +21,7 @@ const CalendarSchema = new Schema(
       required: true,
     },
 
-    // ✅ 공유 기능 관련 필드 추가
+    // 공유 기능 관련 필드 추가
     shareLink: {
       type: String,
       default: null,
@@ -44,7 +44,7 @@ const CalendarSchema = new Schema(
       ref: 'User'
     }],
   },
-  { timestamps: true } // ✅ 여기 괄호 닫힘 주의!
+  { timestamps: true } // 여기 괄호 닫힘 주의!
 );
 
 module.exports = model("Calendar", CalendarSchema);

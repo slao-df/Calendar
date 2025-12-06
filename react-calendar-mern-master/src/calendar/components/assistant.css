@@ -1,27 +1,24 @@
-/* 오버레이는 그대로 (이전 위치/사이즈 유지) */
+/* 오버레이는 그대로 (이전 위치/사이즈 유지 느낌) */
 .assistant-overlay {
   position: fixed;
   inset: 0;
   background: rgba(17, 24, 39, 0.25);
   display: flex;
-  justify-content: flex-end;       /* 오른쪽 모달 */
+  justify-content: flex-end; /* 오른쪽 모달 */
   align-items: flex-start;
   z-index: 2000;
 }
 
-/* 고정 크기/위치: 예전 패널 사이즈 그대로(너비 420, 높이 560, 우측에 떠 있는 패널) */
+/* 위치/크기는 JS에서 style로 제어 (top, left, width, height) */
 .assistant-modal {
   position: fixed;
-  right: 24px;             /* 화면 오른쪽에서 24px */
-  bottom: 96px;            /* FAB(원형 버튼)과 겹치지 않게 96px 띄움 */
-  width: 420px;
-  height: 560px;
   background: #fff;
   border-radius: 12px;
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.18);
   display: flex;
   flex-direction: column;
   z-index: 1100;
+  overflow: hidden; /* 리사이즈 시 내용 튀어나오지 않게 */
 }
 
 /* 헤더 */
@@ -32,6 +29,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  cursor: move; /* 드래그 가능 힌트 */
+  user-select: none;
 }
 
 /* 메시지 영역 */
@@ -54,16 +53,22 @@
 /* 자동 확장 textarea – 스크롤 숨김 */
 .assistant-textarea {
   flex: 1;
-  min-height: 44px;     /* 기본 한 줄 */
-  max-height: 120px;    /* 5~6줄에서 더 커지지 않도록 제한 */
+  min-height: 44px; /* 기본 한 줄 */
+  max-height: 120px; /* 5~6줄에서 더 커지지 않도록 제한 */
   resize: none;
-  overflow: hidden;     /* 스크롤 숨김(요구사항) */
+  overflow: hidden; /* 스크롤 숨김(요구사항) */
   border: 1px solid #e5e7eb;
   border-radius: 10px;
   padding: 10px 12px;
   font-size: 14px;
   line-height: 20px;
   background: #fff;
+}
+
+.assistant-textarea:focus {
+  outline: none;
+  border-color: #8c9eff;
+  box-shadow: 0 0 0 1px rgba(140, 158, 255, 0.3);
 }
 
 /* 버튼 */
@@ -74,6 +79,7 @@
   color: #fff;
   border: none;
   font-weight: 600;
+  cursor: pointer;
 }
 
 /* --- 말풍선 정렬 --- */
@@ -99,12 +105,12 @@
   white-space: pre-wrap;
 }
 .bot .bubble {
-  background: #f3f4f6;     /* 연회색 */
+  background: #f3f4f6; /* 연회색 */
   color: #111827;
   border-top-left-radius: 6px;
 }
 .user .bubble {
-  background: #6d8dff;     /* 파란색 */
+  background: #6d8dff; /* 파란색 */
   color: #fff;
   border-top-right-radius: 6px;
 }
@@ -117,4 +123,92 @@
   line-height: 18px;
   cursor: pointer;
   color: #6b7280;
+}
+
+/* ───────── 리사이즈 핸들 (4변 + 4모서리) ───────── */
+
+.assistant-resize-handle {
+  position: absolute;
+  z-index: 1200;
+}
+
+/* 변(엣지) 핸들 */
+.assistant-resize-handle.edge {
+  background: transparent;
+}
+
+.assistant-resize-handle.edge.top {
+  top: -3px;
+  left: 10%;
+  right: 10%;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+.assistant-resize-handle.edge.bottom {
+  bottom: -3px;
+  left: 10%;
+  right: 10%;
+  height: 6px;
+  cursor: ns-resize;
+}
+
+.assistant-resize-handle.edge.left {
+  left: -3px;
+  top: 10%;
+  bottom: 10%;
+  width: 6px;
+  cursor: ew-resize;
+}
+
+.assistant-resize-handle.edge.right {
+  right: -3px;
+  top: 10%;
+  bottom: 10%;
+  width: 6px;
+  cursor: ew-resize;
+}
+
+/* 모서리 핸들 (조그만 삼각형 느낌) */
+.assistant-resize-handle.corner {
+  width: 12px;
+  height: 12px;
+  background: transparent;
+}
+
+.assistant-resize-handle.corner.tl {
+  top: -2px;
+  left: -2px;
+  cursor: nwse-resize;
+}
+
+.assistant-resize-handle.corner.tr {
+  top: -2px;
+  right: -2px;
+  cursor: nesw-resize;
+}
+
+.assistant-resize-handle.corner.bl {
+  bottom: -2px;
+  left: -2px;
+  cursor: nesw-resize;
+}
+
+.assistant-resize-handle.corner.br {
+  bottom: -2px;
+  right: -2px;
+  cursor: nwse-resize;
+}
+
+/* 모서리 표시선 살짝 (선택 사항) */
+.assistant-resize-handle.corner.br::after {
+  content: "";
+  position: absolute;
+  right: 1px;
+  bottom: 1px;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid #d1d5db;
+  border-bottom: 2px solid #d1d5db;
+  border-radius: 0 0 3px 0;
 }

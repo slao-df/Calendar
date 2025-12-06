@@ -3,20 +3,18 @@ import { createSlice } from '@reduxjs/toolkit';
 export const calendarSlice = createSlice({
   name: 'calendar',
   initialState: {
-    // ✅ 이벤트 관련
+    // 이벤트 관련
     isLoadingEvents: true,
     events: [],
     activeEvent: null,
 
-    // ✅ 캘린더 관련
+    // 캘린더 관련
     calendars: [],         // 내 캘린더 목록
     activeCalendar: null,  // 선택된 캘린더
   },
 
   reducers: {
-    // ----------------------------
-    // 🔹 이벤트 관련 리듀서
-    // ----------------------------
+    // 이벤트 관련 리듀서
 
     onSetActiveEvent: (state, { payload }) => {
       state.activeEvent = payload;
@@ -27,7 +25,7 @@ export const calendarSlice = createSlice({
       state.activeEvent = null;
     },
 
-    // ✅ 기존 이벤트 교체 (드래그/리사이즈 시 즉시 반영 가능)
+    // 기존 이벤트 교체 (드래그/리사이즈 시 즉시 반영 가능)
     onUpdateEvent: (state, { payload }) => {
       state.events = state.events.map((event) =>
         (event.id || event._id) === (payload.id || payload._id)
@@ -71,10 +69,8 @@ export const calendarSlice = createSlice({
       state.activeCalendar = null;
     },
 
-    // ----------------------------
-    // 🔹 캘린더 관련 리듀서
-    // ----------------------------
 
+    // 캘린더 관련 리듀서
     onAddCalendar: (state, { payload }) => {
       state.calendars.push(payload);
     },
@@ -127,7 +123,7 @@ export const calendarSlice = createSlice({
 });
 
 export const {
-  // 🔹 이벤트 관련
+  //이벤트 관련
   onSetActiveEvent,
   onAddNewEvent,
   onUpdateEvent,
@@ -135,7 +131,7 @@ export const {
   onLoadEvents,
   onLogoutCalendar,
 
-  // 🔹 캘린더 관련
+  //캘린더 관련
   onAddCalendar,
   onDeleteCalendar,
   onSetActiveCalendar,

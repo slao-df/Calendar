@@ -115,7 +115,7 @@ export const useCalendarStore = () => {
     }
   };
 
-  // 삭제
+  // 삭제 (메인 캘린더에서 직접 삭제할 때)
   const startDeletingEvent = async () => {
     if (!activeEvent) return;
 
@@ -134,11 +134,46 @@ export const useCalendarStore = () => {
     }
   };
 
+  // ⭐ AI 도우미 삭제 결과를 프론트 상태에 즉시 반영하는 함수
+  // deletedIds: 백엔드에서 내려준 삭제된 이벤트 _id 배열
+  const deleteEventsByIds = (deletedIds = []) => {
+    if (!Array.isArray(deletedIds) || deletedIds.length === 0) return;
+
+    const idSet = new Set(deletedIds.map((id) => String(id)));
+
+    const filteredEvents = (events || []).filter((ev) => {
+      const evId =
+        toId(ev.id) ||
+        toId(ev._id) ||
+        toId(ev.eventId) ||
+        toId(ev);
+      if (!evId) return true;
+      return !idSet.has(String(evId));
+    });
+
+    const merged = attachCalendarsToEvents(filteredEvents, calendars);
+    dispatch(onLoadEvents(merged));
+  };
+
   // 이벤트 로드 (로드 후 최신 캘린더 객체와 매칭)
   const startLoadingEvents = async () => {
     try {
       const { data } = await calendarApi.get('/events');
       const merged = attachCalendarsToEvents(data.events, calendars);
+
+      // 🔥 여기서 한번 전체 events를 싹 비우고, 서버 값으로 다시 채운다.
+      // onLoadEvents 가 "append only" 방식이어도, 먼저 전부 onDeleteEvent로 지워버리면
+      // 최종적으로는 서버에서 받은 이벤트만 남게 됨.
+      if (events && events.length) {
+        for (const ev of events) {
+          const id = ev.id || ev._id || toId(ev);
+          if (id) {
+            dispatch(onDeleteEvent(id));
+          }
+        }
+      }
+
+      // 그리고 서버에서 받은 최신 목록으로 덮어쓰기
       dispatch(onLoadEvents(merged));
     } catch (error) {
       console.error('❗️ 이벤트 로딩 중 오류 발생:', error);
@@ -235,7 +270,7 @@ export const useCalendarStore = () => {
       // 삭제 후 전체 동기화
       await startLoadingCalendars();
       await startLoadingEvents();
-      Swal.fire('삭제 완료', '캘린더 및 관련 일정이 삭제되었습니다.', 'success');
+      //Swal.fire('삭제 완료', '캘린더 및 관련 일정이 삭제되었습니다.', 'success');
     } catch (error) {
       console.log(error);
       Swal.fire(
@@ -270,5 +305,8 @@ export const useCalendarStore = () => {
     setActiveCalendar,
 
     startJoiningCalendar,
+
+    // AI 도우미용: deletedIds 기준으로 프론트에서 바로 일정 제거
+    deleteEventsByIds,
   };
 };

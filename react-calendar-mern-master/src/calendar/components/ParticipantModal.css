@@ -94,7 +94,7 @@
   border-bottom: none;
 }
 
-/* ✅ [신규] 참여자 아이템 내 체크박스 */
+/*참여자 아이템 내 체크박스 */
 .participant-checkbox {
   margin-right: 10px; /* 이름과의 간격 */
   cursor: pointer;
@@ -103,7 +103,7 @@
   vertical-align: middle; /* 다른 요소와 세로 정렬 */
 }
 
-/* ✅ [신규] 선택된 아이템 배경 강조 */
+/* 선택된 아이템 배경 강조 */
 .participant-item.selected {
   background-color: #e7f1ff; /* 선택 시 배경색 */
 }
@@ -120,7 +120,7 @@
   border-radius: 10px;
   background-color: #e9ecef;
   color: #495057;
-  margin-left: auto; /* ✅ 역할 태그를 오른쪽 끝으로 */
+  margin-left: auto; /* 역할 태그를 오른쪽 끝으로 */
 }
 .owner .role-tag {
   background-color: #f0ad4e;

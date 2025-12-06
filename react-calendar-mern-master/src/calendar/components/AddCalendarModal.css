@@ -133,7 +133,7 @@
 .cancel-btn:hover {
   background: #666;
 }
-/* ✅ 색상 삭제 버튼 디자인 */
+/* 색상 삭제 버튼 디자인 */
 .color-wrapper {
   position: relative;
   display: inline-flex;

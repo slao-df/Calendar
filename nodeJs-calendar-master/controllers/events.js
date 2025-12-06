@@ -1,10 +1,8 @@
 const { response } = require('express');
 const Event = require('../models/Event');
-const Calendar = require('../models/Calendar'); // ✅ 캘린더 모델 임포트
+const Calendar = require('../models/Calendar'); // 캘린더 모델 임포트
 
-// -------------------------------------------------
-// ✅ [신규] 편집 권한 확인 헬퍼 함수
-// -------------------------------------------------
+// 편집 권한 확인 헬퍼 함수
 /**
  * 사용자가 특정 캘린더에 대해 편집 권한(소유자 또는 편집자)이 있는지 확인합니다.
  * @param {string} calendarId - 확인할 캘린더의 ID
@@ -55,7 +53,7 @@ const getEvents = async (req, res) => {
 
   } catch (error) {
     console.error('❌ 이벤트 로딩 오류 (getEvents):', error);
-    res.status(500).json({ ok: false, msg: '서버 오류 발생' }); // ✅ ok: false 추가
+    res.status(500).json({ ok: false, msg: '서버 오류 발생' }); // ok: false 추가
   }
 };
 

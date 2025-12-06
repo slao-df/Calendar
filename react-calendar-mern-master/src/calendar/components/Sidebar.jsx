@@ -37,7 +37,7 @@ export const Sidebar = ({ setIsEventModalOpen, checkedState, handleCheckboxChang
   // 4. 핸들러 함수
   // '+' 버튼 핸들러 (AddCalendarModal 열기 - 탭 모드)
   const handleAddCalendarClick = () => {
-    // ✅ [중요] activeCalendar를 null로 설정 -> AddCalendarModal이 탭 모드로 열림
+    // activeCalendar를 null로 설정 -> AddCalendarModal이 탭 모드로 열림
     setActiveCalendar(null); 
     setIsAddModalOpen(true);
   };
@@ -58,7 +58,7 @@ export const Sidebar = ({ setIsEventModalOpen, checkedState, handleCheckboxChang
 
   // '수정 / 삭제' 팝업 버튼 클릭 핸들러 (AddCalendarModal 열기 - 수정 모드)
   const handleEditCalendarClick = (calendar) => {
-    // ✅ [중요] 수정할 캘린더를 activeCalendar로 설정 -> AddCalendarModal이 수정 모드로 열림
+    // 수정할 캘린더를 activeCalendar로 설정 -> AddCalendarModal이 수정 모드로 열림
     setActiveCalendar(calendar); 
     setIsAddModalOpen(true); 
     setMenuOpenState(null); // 메뉴 팝업 닫기

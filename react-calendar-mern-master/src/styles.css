@@ -124,3 +124,106 @@
   width: 70px;
   height: 70px;
 }
+
+.profile-menu-container {
+  position: relative;
+}
+
+/* 🔵 프로필 버튼 → +일정쓰기 버튼과 동일한 색 (#4e73df) */
+.profile-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #4e73df;
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+
+  border: none !important;
+  outline: none !important;
+  transition: 0.15s ease;
+}
+
+.profile-btn:hover {
+  background: #415ec4;
+}
+
+/* 드롭다운 */
+/* 버튼 기준 드롭다운 위치 조정 + 최상위로 띄우기 */
+.profile-dropdown {
+  position: absolute;
+  right: 0;
+  top: 48px; /* 기존 50px보다 약간 올림 */
+
+  min-width: 200px; /* 너비 고정 */
+  max-width: 240px;
+
+  background: white;
+  border-radius: 12px;
+  padding: 14px;
+
+  box-shadow: 0px 8px 25px rgba(0, 0, 0, 0.15);
+  z-index: 9999; /* 최상위로 이동 */
+
+  animation: fadeIn 0.15s ease;
+}
+
+/* dropdown 메뉴 내부 text 줄 바꿈 방지 */
+.profile-dropdown * {
+  white-space: nowrap;
+}
+
+
+/* 사용자 정보 */
+.profile-name {
+  font-size: 15px;
+  font-weight: bold;
+}
+
+.profile-email {
+  font-size: 13px;
+  color: #777;
+  margin-bottom: 10px;
+}
+
+/* 메뉴 버튼 스타일 */
+.dropdown-item {
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 10px 4px;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 8px;
+}
+
+.dropdown-item:hover {
+  background: #f5f5f5;
+}
+
+.logout {
+  color: #d9534f;
+}
+
+.logout:hover {
+  background: #ffeaea;
+}
+
+/* Divider */
+.dropdown-divider {
+  border: none;
+  height: 1px;
+  background: #eaeaea;
+  margin: 10px 0;
+}
+
+/* Fade Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}

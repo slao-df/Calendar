@@ -3,7 +3,7 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import { persistStore, persistReducer } from 'redux-persist';
 
-// ❗️ 1. 'redux-persist/lib/storage' 대신 'session'을 임포트합니다.
+// 1. 'redux-persist/lib/storage' 대신 'session'을 임포트합니다.
 // import storage from 'redux-persist/lib/storage'; // 👈 (기존 코드)
 import storage from 'redux-persist/lib/storage/session'; // 👈 [수정] 이 코드로 변경
 
@@ -20,7 +20,7 @@ const rootReducer = combineReducers({
 
 const persistConfig = {
   key: 'root',
-  storage, // ✅ 2. 여기서 'session' (sessionStorage)이 사용됩니다.
+  storage, // 2. 여기서 'session' (sessionStorage)이 사용됩니다.
   // (선택) auth만 저장하고 싶다면:
   // whitelist: ['auth']
 };
@@ -28,7 +28,7 @@ const persistConfig = {
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({
-  reducer: persistedReducer, // ✅ 3. persistReducer를 사용
+  reducer: persistedReducer, // 3. persistReducer를 사용
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false, // (redux-persist와 함께 쓸 때 권장)

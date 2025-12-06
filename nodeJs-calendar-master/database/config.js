@@ -23,7 +23,7 @@
 //   }
 // }
 
-// module.exports = { dbConnection }; // ✅ named export
+// module.exports = { dbConnection }; // named export
 
 
 const mongoose = require('mongoose');
