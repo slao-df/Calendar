@@ -1,6 +1,6 @@
 // controllers/calendars.js
 const Calendar = require('../models/Calendar');
-const Event = require('../models/Event'); // 👈 [추가] 이벤트 삭제를 위해 Event 모델 임포트
+const Event = require('../models/Event'); // 이벤트 삭제를 위해 Event 모델 임포트
 
 // 모든 캘린더 불러오기
 const getCalendars = async (req, res) => {
@@ -183,7 +183,7 @@ const getCalendarParticipants = async (req, res) => {
       ok: true,
       owner: targetCalendar.user,
       participants: targetCalendar.participants,
-      editors: targetCalendar.editors || [] // 👈 editors 배열 추가 (없으면 빈 배열)
+      editors: targetCalendar.editors || [] // editors 배열 추가 (없으면 빈 배열)
     });
 
   } catch (error) {
