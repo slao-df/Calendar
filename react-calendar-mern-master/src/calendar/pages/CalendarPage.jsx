@@ -15,6 +15,7 @@ import { Navbar, CalendarModal } from '../';
 import { Sidebar } from '../components/Sidebar';
 import { getMessagesKO, convertEventsToDateEvents } from '../../helpers';
 import { useCalendarStore, useAuthStore } from '../../hooks';
+import { useRealtimeCalendarSync } from '../../hooks/useRealtimeCalendarSync';
 
 const DragAndDropCalendar = withDragAndDrop(Calendar);
 
@@ -53,7 +54,7 @@ export const CalendarPage = () => {
     startLoadingCalendars,
     startSavingEvent,
   } = useCalendarStore();
-
+  useRealtimeCalendarSync(15000); //최대 15초 안에 자동으로 변경 내용 반영
   // 2. Local State
   const [lastView, setLastView] = useState(localStorage.getItem('lastView') || 'month');
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
