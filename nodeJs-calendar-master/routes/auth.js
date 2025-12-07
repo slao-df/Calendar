@@ -11,11 +11,10 @@ const { validateJWT } = require('../middlewares/validate-jwt');
 
 const router = Router();
 
-// 🔹 회원가입
+//회원가입
 router.post(
   '/new',
   [
-    // 미들웨어
     check('name', '이름은 필수 입력 항목입니다.').not().isEmpty(),
     check('email', '이메일은 필수 입력 항목입니다.').isEmail(),
     check('password', '비밀번호는 최소 6자 이상이어야 합니다.').isLength({ min: 6 }),
@@ -24,11 +23,10 @@ router.post(
   createUser
 );
 
-// 🔹 로그인
+// 로그인
 router.post(
   '/',
   [
-    // 미들웨어
     check('email', '이메일은 필수 입력 항목입니다.').isEmail(),
     check('password', '비밀번호는 최소 6자 이상이어야 합니다.').isLength({ min: 6 }),
     validateFields,
@@ -36,7 +34,9 @@ router.post(
   loginUser
 );
 
-// 🔹 토큰 재검증 (재발급)
+// 토큰 재검증 (재발급)
 router.get('/renew', validateJWT, revalidateToken);
 
+
+//  module.exports = { router }  이런 식으로 내보내면 지금 보는 에러가 난다.
 module.exports = router;
