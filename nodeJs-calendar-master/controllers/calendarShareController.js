@@ -1,16 +1,14 @@
 // controllers/calendarShareController.js
 
-const crypto = require('crypto');
-const bcrypt = require('bcryptjs');
 const Calendar = require('../models/Calendar');
-// const SharedCalendar = require('../models/SharedCalendar'); // 이 모델은 현재 로직에서 사용되지 않는 것 같습니다.
-const { v4: uuidv4 } = require('uuid'); // uuid 임포트
 
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
-/** 공유 링크 생성/수정 (비밀번호 저장) */
-// controllers/calendarShareController.js
-
+/**
+ * 공유 링크 생성/수정 (비밀번호 저장)
+ * - 소유자만 실행 가능
+ * - 링크 형식: FRONTEND_URL/share-calendar/:calendarId  (기존 방식 유지)
+ */
 const generateShareLink = async (req, res) => {
   const { id: calendarId } = req.params;
   const { password } = req.body || {};
@@ -20,225 +18,320 @@ const generateShareLink = async (req, res) => {
     const calendar = await Calendar.findById(calendarId);
 
     if (!calendar) {
-      return res.status(404).json({ ok: false, msg: '캘린더를 찾을 수 없습니다.' });
-    }
-    if (calendar.user.toString() !== userId) {
-      return res.status(401).json({ ok: false, msg: '권한이 없습니다.' });
+      return res
+        .status(404)
+        .json({ ok: false, msg: '캘린더를 찾을 수 없습니다.' });
     }
 
-    // 공유 링크가 없으면 생성
+    // ✅ 소유자만 가능
+    if (!calendar.isOwner(userId)) {
+      return res
+        .status(401)
+        .json({ ok: false, msg: '해당 캘린더의 소유자만 공유 설정을 변경할 수 있습니다.' });
+    }
+
+    // 공유 링크가 없으면 생성 (기존 형식 유지)
     if (!calendar.shareLink) {
       calendar.shareLink = `${FRONTEND_URL}/share-calendar/${calendar.id}`;
     }
 
-    // 비밀번호가 있으면 저장
-    if (password !== undefined && password !== null && password.trim() !== '') {
-      calendar.sharePassword = password;
+    // 비밀번호가 있으면 저장 (평문 저장 - 간단한 프로젝트용)
+    if (typeof password === 'string' && password.trim() !== '') {
+      calendar.sharePassword = password.trim();
     }
 
     await calendar.save();
 
-    res.json({
+    return res.json({
       ok: true,
       shareUrl: calendar.shareLink,
       sharePassword: calendar.sharePassword || '',
     });
   } catch (error) {
     console.error(`❌ 공유 링크 생성/수정 오류 (캘린더 ID: ${calendarId}):`, error);
-    res.status(500).json({ ok: false, msg: '서버 오류 발생' });
+    return res
+      .status(500)
+      .json({ ok: false, msg: '서버 오류 발생' });
   }
 };
 
-
-
-/** 공유 캘린더 참여 (비밀번호 입력 → 내 계정에 추가) */
+/**
+ * 공유 캘린더 참여
+ * - URL의 :shareId는 "원본 캘린더 ID" (기존 방식 유지)
+ * - 비밀번호 일치 확인 후:
+ *    1) 원본 캘린더 participants에 userId 추가
+ *    2) 참여자 계정에 [공유] 캘린더 하나 생성 (originalCalendarId 연결)
+ */
 const joinSharedCalendar = async (req, res) => {
-  const { shareId } = req.params; // URL에서 받은 원본 캘린더의 ID
-  const { password } = req.body; // 사용자가 입력한 비밀번호
-  const userId = req.uid; // 참여하려는 사용자 (현재 로그인된 사용자)
+  const { shareId } = req.params;     // 원본 캘린더 ID
+  const { password } = req.body;      // 사용자가 입력한 비밀번호
+  const userId = req.uid;             // 참여자 (현재 로그인한 사용자)
 
   try {
-    // shareId로 원본 캘린더를 찾습니다.
     const originalCalendar = await Calendar.findById(shareId);
 
-    // 유효성 검사
     if (!originalCalendar || !originalCalendar.shareLink) {
-      return res.status(404).json({ ok: false, msg: '공유 정보를 찾을 수 없습니다.' });
+      return res
+        .status(404)
+        .json({ ok: false, msg: '공유 정보를 찾을 수 없습니다.' });
     }
+
+    // 비밀번호 일치 확인
     if (originalCalendar.sharePassword !== password) {
-      return res.status(401).json({ ok: false, msg: '비밀번호가 일치하지 않습니다.' });
+      return res
+        .status(401)
+        .json({ ok: false, msg: '비밀번호가 일치하지 않습니다.' });
     }
-    if (originalCalendar.user.toString() === userId) {
-      return res.status(400).json({ ok: false, msg: '자신의 캘린더에는 참여할 수 없습니다.' });
+
+    // 본인 캘린더에는 참여 불가
+    if (originalCalendar.isOwner(userId)) {
+      return res
+        .status(400)
+        .json({ ok: false, msg: '자신의 캘린더에는 참여할 수 없습니다.' });
     }
 
     // 이미 참여 중인지 확인
-    if (originalCalendar.participants.includes(userId)) {
-        return res.status(200).json({
-            ok: true,
-            msg: '이미 참여 중인 캘린더입니다.',
-        });
+    const alreadyParticipant = (originalCalendar.participants || []).some(
+      (pid) => String(pid) === String(userId)
+    );
+
+    if (alreadyParticipant) {
+      // 이미 참여 중인 경우에도 프론트에서는 성공으로 간주해도 됨
+      return res.status(200).json({
+        ok: true,
+        msg: '이미 참여 중인 캘린더입니다.',
+      });
     }
 
-    // 원본 캘린더에 participants 추가
+    // 1) 원본 캘린더 participants에 추가
     originalCalendar.participants.push(userId);
-    await originalCalendar.save(); // 변경 사항을 DB에 저장
+    await originalCalendar.save();
 
-    // 참여자를 위한 새 캘린더 문서 생성
+    // 2) 참여자용 개인 캘린더 생성 ([공유] 프리픽스 + originalCalendarId 유지)
     const newCalendar = new Calendar({
-      name: `[공유] ${originalCalendar.name}`, 
+      name: `[공유] ${originalCalendar.name}`,
       color: originalCalendar.color,
       memo: originalCalendar.memo,
-      user: userId, // 참여자 ID
-      originalCalendarId: originalCalendar._id // 원본 ID
+      user: userId,                        // 소유자는 참여자
+      originalCalendarId: originalCalendar._id,
     });
 
-    // 새 캘린더를 데이터베이스에 저장
     await newCalendar.save();
 
-    // 성공 응답 전송
     return res.json({
       ok: true,
       msg: '캘린더에 성공적으로 참여했습니다.',
-      // 저장된 새 캘린더 객체를 반환
-      // (Mongoose가 .save() 후 반환된 객체에는 _id, createdAt, updatedAt이 포함)
-      calendar: newCalendar 
+      calendar: newCalendar,
     });
   } catch (error) {
     console.error('❌ 공유 캘린더 참여 오류:', error);
-    res.status(500).json({ ok: false, msg: '공유 캘린더 참여에 실패했습니다.' });
+    return res
+      .status(500)
+      .json({ ok: false, msg: '공유 캘린더 참여에 실패했습니다.' });
   }
 };
 
-/**  공유 정보 조회 (링크, 비밀번호) */
+/**
+ * 공유 정보 조회 (링크, 비밀번호)
+ * - 소유자만 공유 정보 확인 가능 (기존 요구사항 그대로)
+ */
 const getShareInfo = async (req, res) => {
   const { id } = req.params; // 캘린더 ID
-  const uid = req.uid; // 사용자 ID
+  const uid = req.uid;       // 현재 사용자
 
   try {
     const calendar = await Calendar.findById(id);
-    if (!calendar) return res.status(404).json({ ok: false, msg: '캘린더를 찾을 수 없습니다.' });
-    if (calendar.user.toString() !== uid) return res.status(403).json({ ok: false, msg: '권한이 없습니다.' });
+    if (!calendar) {
+      return res
+        .status(404)
+        .json({ ok: false, msg: '캘린더를 찾을 수 없습니다.' });
+    }
 
-    // DB 조회 직후 로그 (디버깅용)
-    // console.log('--- getShareInfo ---');
-    // console.log('DB calendar:', JSON.stringify(calendar, null, 2));
-    // console.log('calendar.shareLink:', calendar.shareLink);
-    // console.log('calendar.sharePassword:', calendar.sharePassword);
-    // console.log('--- /getShareInfo ---');
+    if (!calendar.isOwner(uid)) {
+      return res
+        .status(403)
+        .json({ ok: false, msg: '공유 정보를 확인할 권한이 없습니다.' });
+    }
 
-    // 모델 스키마에 정의된 shareLink 필드가 있는지 확인
     if (calendar.shareLink) {
       return res.json({
         ok: true,
         shareUrl: calendar.shareLink,
-        sharePassword: calendar.sharePassword || "",
-      });
-    } else {
-      // 정보가 없으면 빈 값 반환
-      return res.json({
-        ok: true,
-        shareUrl: "",
-        sharePassword: "",
+        sharePassword: calendar.sharePassword || '',
       });
     }
 
+    // 공유가 아직 설정되지 않은 경우
+    return res.json({
+      ok: true,
+      shareUrl: '',
+      sharePassword: '',
+    });
   } catch (error) {
     console.error(`❌ 공유 정보 조회 오류 (캘린더 ID: ${id}):`, error);
-    return res.status(500).json({ ok: false, msg: '서버 오류 발생' });
+    return res
+      .status(500)
+      .json({ ok: false, msg: '서버 오류 발생' });
   }
 };
 
-
-// (선택) 재발급 API: 이 함수는 현재 shareLink/sharePassword 모델과 호환되지 않음
-// 필요하다면 generateShareLink 함수와 유사하게 수정 필요
+/**
+ * (선택) 재발급 API
+ * - 현재 구조(shareLink = 전체 URL, sharePassword 평문)에서는
+ *   generateShareLink로도 충분해서, 아직은 미구현 상태 유지
+ */
 const regenerateShareCredentials = async (req, res) => {
-   // TODO: 현재 모델 구조에 맞게 수정 필요 (shareLink, sharePassword 사용)
-   return res.status(501).json({ ok: false, msg: '구현되지 않은 기능입니다.' });
+  return res
+    .status(501)
+    .json({ ok: false, msg: '구현되지 않은 기능입니다.' });
 };
 
-// 공유 링크 접속 후(로그인 상태) 비밀번호 검증 + 내 목록에 추가
-// 이 기능은 joinSharedCalendar 함수와 중복되므로 제거하거나 수정 필요
+/**
+ * (이전 버전 호환용) verifyAndAttachSharedCalendar
+ * - 현재는 joinSharedCalendar로 기능이 대체되어 있으므로 미구현
+ */
 const verifyAndAttachSharedCalendar = async (req, res) => {
-   // TODO: joinSharedCalendar 함수 사용 또는 현재 모델 구조에 맞게 수정 필요
-   return res.status(501).json({ ok: false, msg: '구현되지 않은 기능입니다.' });
+  return res
+    .status(501)
+    .json({ ok: false, msg: '구현되지 않은 기능입니다.' });
 };
 
+/**
+ * 특정 참여자에게 편집 권한 부여
+ * - 소유자만 실행 가능
+ * - body: { participantId }
+ */
 const grantEditPermission = async (req, res) => {
-  const { id: calendarId } = req.params; // 원본 캘린더 ID
-  const { participantId } = req.body; // 권한을 줄 유저 ID (예: user2)
-  const userId = req.uid; // 요청자 (예: test)
+  const { id: calendarId } = req.params;
+  const { participantId } = req.body;
+  const userId = req.uid;
 
   try {
     const calendar = await Calendar.findById(calendarId);
-    if (!calendar) return res.status(404).json({ ok: false, msg: '캘린더 없음' });
-
-    // 소유자만 권한을 줄 수 있음
-    if (calendar.user.toString() !== userId) {
-      return res.status(401).json({ ok: false, msg: '소유자만 권한을 부여할 수 있습니다.' });
+    if (!calendar) {
+      return res
+        .status(404)
+        .json({ ok: false, msg: '캘린더 없음' });
     }
 
-    // 이미 권한이 있는지 확인 후 추가
-    if (!calendar.editors.includes(participantId)) {
-      calendar.editors.push(participantId);
-      await calendar.save();
-    }
-    res.json({ ok: true, msg: '편집 권한이 부여되었습니다.' });
-
-  } catch (error) {
-    res.status(500).json({ ok: false, msg: '서버 오류' });
-  }
-};
-
-/** 캘린더 편집 권한 취소 */
-const revokeEditPermission = async (req, res) => {
-  const { id: calendarId } = req.params; // 원본 캘린더 ID
-  const { participantId } = req.body; // 권한을 뺏을 유저 ID (예: user2)
-  const userId = req.uid; // 요청자 (예: test)
-
-  try {
-    const calendar = await Calendar.findById(calendarId);
-    if (!calendar) return res.status(404).json({ ok: false, msg: '캘린더 없음' });
-
-    // 소유자만 권한을 취소할 수 있음
-    if (calendar.user.toString() !== userId) {
-      return res.status(401).json({ ok: false, msg: '소유자만 권한을 취소할 수 있습니다.' });
+    // ✅ 소유자만 권한 부여 가능
+    if (!calendar.isOwner(userId)) {
+      return res
+        .status(401)
+        .json({ ok: false, msg: '소유자만 권한을 부여할 수 있습니다.' });
     }
 
-    //권한 목록에서 제거
-    calendar.editors = calendar.editors.filter(
-      editorId => editorId.toString() !== participantId
+    // 이미 편집자인지 확인
+    const alreadyEditor = (calendar.editors || []).some(
+      (eid) => String(eid) === String(participantId)
     );
-    await calendar.save();
-    res.json({ ok: true, msg: '편집 권한이 취소되었습니다.' });
 
+    if (!alreadyEditor) {
+      calendar.editors.push(participantId);
+    }
+
+    // 편집자는 기본적으로 viewer이기도 하므로 participants에 없으면 추가
+    const alreadyParticipant = (calendar.participants || []).some(
+      (pid) => String(pid) === String(participantId)
+    );
+    if (!alreadyParticipant) {
+      calendar.participants.push(participantId);
+    }
+
+    await calendar.save();
+
+    return res.json({
+      ok: true,
+      msg: '편집 권한이 부여되었습니다.',
+      editors: calendar.editors,
+      participants: calendar.participants,
+    });
   } catch (error) {
-    res.status(500).json({ ok: false, msg: '서버 오류' });
+    console.error('grantEditPermission 오류:', error);
+    return res
+      .status(500)
+      .json({ ok: false, msg: '서버 오류' });
   }
 };
 
+/**
+ * 캘린더 편집 권한 취소
+ * - 소유자만 실행 가능
+ * - body: { participantId }
+ */
+const revokeEditPermission = async (req, res) => {
+  const { id: calendarId } = req.params;
+  const { participantId } = req.body;
+  const userId = req.uid;
+
+  try {
+    const calendar = await Calendar.findById(calendarId);
+    if (!calendar) {
+      return res
+        .status(404)
+        .json({ ok: false, msg: '캘린더 없음' });
+    }
+
+    // ✅ 소유자만 권한 취소 가능
+    if (!calendar.isOwner(userId)) {
+      return res
+        .status(401)
+        .json({ ok: false, msg: '소유자만 권한을 취소할 수 있습니다.' });
+    }
+
+    calendar.editors = (calendar.editors || []).filter(
+      (eid) => String(eid) !== String(participantId)
+    );
+
+    await calendar.save();
+
+    return res.json({
+      ok: true,
+      msg: '편집 권한이 취소되었습니다.',
+      editors: calendar.editors,
+    });
+  } catch (error) {
+    console.error('revokeEditPermission 오류:', error);
+    return res
+      .status(500)
+      .json({ ok: false, msg: '서버 오류' });
+  }
+};
+
+/**
+ * 여러 참여자의 권한 일괄 변경
+ * - body: { changes: { [userId]: true|false } }
+ *   true  → editors에 추가
+ *   false → editors에서 제거
+ * - 소유자만 실행 가능
+ */
 const updateBulkPermissions = async (req, res) => {
   const { id: calendarId } = req.params;
-  // changes 객체 예: { userId1: true, userId2: false } (true = 편집자 부여, false = 편집자 취소)
-  const { changes } = req.body; 
-  const userId = req.uid; // 요청자 (소유자여야 함)
+  const { changes } = req.body || {};
+  const userId = req.uid;
 
   if (!changes || typeof changes !== 'object' || Object.keys(changes).length === 0) {
-    return res.status(400).json({ ok: false, msg: '잘못된 요청입니다. 변경 사항이 없습니다.' });
+    return res
+      .status(400)
+      .json({ ok: false, msg: '잘못된 요청입니다. 변경 사항이 없습니다.' });
   }
 
   try {
     const calendar = await Calendar.findById(calendarId);
-    if (!calendar) return res.status(404).json({ ok: false, msg: '캘린더 없음' });
-
-    // 소유자만 변경 가능
-    if (calendar.user.toString() !== userId) {
-      return res.status(401).json({ ok: false, msg: '소유자만 권한 변경 가능' });
+    if (!calendar) {
+      return res
+        .status(404)
+        .json({ ok: false, msg: '캘린더 없음' });
     }
 
-    // 변경사항 적용 준비
-    const grantIds = []; // 편집 권한 부여할 ID 목록
-    const revokeIds = []; // 편집 권한 취소할 ID 목록
+    if (!calendar.isOwner(userId)) {
+      return res
+        .status(401)
+        .json({ ok: false, msg: '소유자만 권한 변경 가능' });
+    }
+
+    const grantIds = [];
+    const revokeIds = [];
 
     for (const participantId in changes) {
       if (changes[participantId] === true) {
@@ -248,26 +341,50 @@ const updateBulkPermissions = async (req, res) => {
       }
     }
 
-    // DB 업데이트 (두 작업을 동시에 실행)
-    await Promise.all([
-      // 권한 부여 ($addToSet: 중복 없이 추가)
-      grantIds.length > 0 ? Calendar.updateOne(
-        { _id: calendarId },
-        { $addToSet: { editors: { $each: grantIds } } }
-      ) : Promise.resolve(), // 작업 없으면 통과
-      
-      // 권한 취소 ($pull: 배열에서 제거)
-      revokeIds.length > 0 ? Calendar.updateOne(
-        { _id: calendarId },
-        { $pull: { editors: { $in: revokeIds } } }
-      ) : Promise.resolve() // 작업 없으면 통과
-    ]);
-    
-    res.json({ ok: true, msg: '권한이 성공적으로 저장되었습니다.' });
+    // 실제 DB 업데이트
+    const ops = [];
 
+    if (grantIds.length > 0) {
+      ops.push(
+        Calendar.updateOne(
+          { _id: calendarId },
+          {
+            $addToSet: {
+              editors: { $each: grantIds },
+              participants: { $each: grantIds }, // 편집자는 참여자이기도 함
+            },
+          }
+        )
+      );
+    }
+
+    if (revokeIds.length > 0) {
+      ops.push(
+        Calendar.updateOne(
+          { _id: calendarId },
+          { $pull: { editors: { $in: revokeIds } } }
+        )
+      );
+    }
+
+    if (ops.length > 0) {
+      await Promise.all(ops);
+    }
+
+    // 최신값 다시 조회해서 반환
+    const updated = await Calendar.findById(calendarId).lean();
+
+    return res.json({
+      ok: true,
+      msg: '권한이 성공적으로 저장되었습니다.',
+      editors: updated.editors || [],
+      participants: updated.participants || [],
+    });
   } catch (error) {
     console.error('일괄 권한 업데이트 오류:', error);
-    res.status(500).json({ ok: false, msg: '서버 오류 발생' });
+    return res
+      .status(500)
+      .json({ ok: false, msg: '서버 오류 발생' });
   }
 };
 
@@ -276,8 +393,8 @@ module.exports = {
   getShareInfo,
   joinSharedCalendar,
   regenerateShareCredentials,
-  verifyAndAttachSharedCalendar, 
-  grantEditPermission, 
+  verifyAndAttachSharedCalendar,
+  grantEditPermission,
   revokeEditPermission,
   updateBulkPermissions,
 };
