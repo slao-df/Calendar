@@ -101,7 +101,7 @@ const AccountSettingsPage = () => {
           className="btn btn-link p-0 me-2"
           style={{ textDecoration: "none", color: "#4b5563" }}
         >
-          ← 뒤로
+          ←
         </button>
         <h3 className="m-0 fw-bold">계정 관리</h3>
       </div>
