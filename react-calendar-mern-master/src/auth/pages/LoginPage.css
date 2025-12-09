@@ -165,3 +165,10 @@
   font-weight: bold;
   text-decoration: none;
 }
+
+
+/* input-group 안에 있는 인풋의 왼쪽 모서리도 둥글게 (Bootstrap 덮어쓰기) */
+.login-container .input-group > input,
+.login-container .input-group > .form-control {
+  border-radius: 8px !important;
+}
