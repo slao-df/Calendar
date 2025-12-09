@@ -261,34 +261,28 @@ export default function AssistantChatModal({ open, onClose }) {
 
     const line = candidateLines[choiceIndex];
 
-    // "12월 8일"
-    const md = line.match(/(\d{1,2})\s*월\s*(\d{1,2})\s*일/);
-    if (!md) return null;
-    const month = Number(md[1]);
-    const day = Number(md[2]);
-
-    // "15:00~16:00"
-    const tt = line.match(/(\d{1,2}):(\d{2})\s*[~\-]\s*(\d{1,2}):(\d{2})/);
-    if (!tt) return null;
-
-    const sh = String(tt[1]).padStart(2, "0");
-    const sm = String(tt[2]).padStart(2, "0");
-    const eh = String(tt[3]).padStart(2, "0");
-    const em = String(tt[4]).padStart(2, "0");
+    // "1. 12월 매주 목요일 10:00~11:00" → 번호 제거
+    const labelPart = line.replace(/^\s*\d+\.\s*/, "").trim();
+    // labelPart 자체가 "12월 매주 목요일 10:00~11:00" 형태
+    let prompt = `${labelPart} 일정 추가해줘`;
 
     const titleWord =
       baseTitle && baseTitle.trim().length >= 2
         ? baseTitle.trim()
         : fallbackInferTitle(sourceText || "");
 
-    let prompt = `${month}월 ${day}일 ${sh}:${sm}~${eh}:${em} 일정 추가해줘`;
-
     if (titleWord && titleWord !== "일정") {
       prompt += ` [TITLE:${titleWord}]`;
     }
 
+    // 원래 질문에 "매주"가 들어있으면 반복 태그 추가
+    if (sourceText && /매주/.test(sourceText)) {
+      prompt += " [REPEAT:WEEKLY]";
+    }
+
     return prompt;
   };
+
 
   // ───────── 메시지 전송 ─────────
   const send = async () => {
