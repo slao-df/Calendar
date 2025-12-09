@@ -161,7 +161,7 @@ export const useCalendarStore = () => {
       const { data } = await calendarApi.get('/events');
       const merged = attachCalendarsToEvents(data.events, calendars);
 
-      // 🔥 여기서 한번 전체 events를 싹 비우고, 서버 값으로 다시 채운다.
+      // 여기서 한번 전체 events를 싹 비우고, 서버 값으로 다시 채운다.
       // onLoadEvents 가 "append only" 방식이어도, 먼저 전부 onDeleteEvent로 지워버리면
       // 최종적으로는 서버에서 받은 이벤트만 남게 됨.
       if (events && events.length) {
@@ -248,7 +248,7 @@ export const useCalendarStore = () => {
       // 낙관적 업데이트 (간단 반영)
       dispatch(onUpdateCalendar(calendarData));
 
-      // 🔁 원본/공유 전파 및 이벤트 색상 반영을 위해 서버 데이터 재로딩
+      // 원본/공유 전파 및 이벤트 색상 반영을 위해 서버 데이터 재로딩
       await startLoadingCalendars();
       await startLoadingEvents();
 
