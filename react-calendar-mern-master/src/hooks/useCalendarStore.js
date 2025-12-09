@@ -134,7 +134,7 @@ export const useCalendarStore = () => {
     }
   };
 
-  // ⭐ AI 도우미 삭제 결과를 프론트 상태에 즉시 반영하는 함수
+  // AI 도우미 삭제 결과를 프론트 상태에 즉시 반영하는 함수
   // deletedIds: 백엔드에서 내려준 삭제된 이벤트 _id 배열
   const deleteEventsByIds = (deletedIds = []) => {
     if (!Array.isArray(deletedIds) || deletedIds.length === 0) return;
