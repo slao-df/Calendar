@@ -1,15 +1,17 @@
+// CalendarPage.jsx
 import { useState, useEffect, useMemo } from 'react';
-import { Calendar, dateFnsLocalizer } from 'react-big-calendar';
-import { format, parse, startOfWeek, getDay } from 'date-fns';
-import ko from 'date-fns/locale/ko';
+import { Calendar } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
+
 import AssistantFab from "../components/AssistantFab";
 import AssistantChatModal from "../components/AssistantChatModal";
+
 // DND
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
 import 'react-big-calendar/lib/addons/dragAndDrop/styles.css';
+
 import { localizer } from '../../helpers/calendarLocalizer';
 import { Navbar, CalendarModal } from '../';
 import { Sidebar } from '../components/Sidebar';
@@ -18,23 +20,6 @@ import { useCalendarStore, useAuthStore } from '../../hooks';
 import { useRealtimeCalendarSync } from '../../hooks/useRealtimeCalendarSync';
 
 const DragAndDropCalendar = withDragAndDrop(Calendar);
-
-// 커스텀 localizer (상단 월/년 형식 변경 포함)
-const locales = { ko };
-const customLocalizer = dateFnsLocalizer({
-  format: (date, formatStr, options) => {
-    if (formatStr === 'MMMM yyyy') {
-      const year = date.getFullYear();
-      const month = date.toLocaleString('ko-KR', { month: 'long' });
-      return `${year}년 ${month}`; // 년-월 순서로 표시
-    }
-    return format(date, formatStr, { locale: ko });
-  },
-  parse,
-  startOfWeek,
-  getDay,
-  locales,
-});
 
 // ----- 유틸 -----
 const toId = (v) => (typeof v === 'object' && v ? (v._id || v.id) : v);
@@ -54,12 +39,15 @@ export const CalendarPage = () => {
     startLoadingCalendars,
     startSavingEvent,
   } = useCalendarStore();
-  useRealtimeCalendarSync(15000); //최대 15초 안에 자동으로 변경 내용 반영
+
+  useRealtimeCalendarSync(15000); // 최대 15초 안에 자동으로 변경 내용 반영
+
   // 2. Local State
   const [lastView, setLastView] = useState(localStorage.getItem('lastView') || 'month');
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [checkedState, setCheckedState] = useState({});
   const [openAssistant, setOpenAssistant] = useState(false);
+
   // 3. useEffects
   useEffect(() => {
     const saved = localStorage.getItem('calendarVisibility');
@@ -78,7 +66,7 @@ export const CalendarPage = () => {
         const updated = { ...prev };
         calendars.forEach((c) => {
           const id = toId(c._id || c.id);
-          if (updated[id] === undefined) updated[id] = true;
+          if (updated[id] === undefined) updated[id] = true; // 새로 추가된 캘린더는 기본으로 표시
         });
         return updated;
       });
@@ -93,8 +81,8 @@ export const CalendarPage = () => {
 
   useEffect(() => {
     if (status === 'authenticated') {
-      startLoadingEvents();
       startLoadingCalendars();
+      startLoadingEvents();
     }
   }, [status]);
 
@@ -231,44 +219,72 @@ export const CalendarPage = () => {
     setLastView(event);
   };
 
-  // 6. 필터링
-  const visibleOriginalIds = useMemo(() => {
-    const idSet = new Set();
-    const calendarMap = new Map(calendars.map((c) => [String(toId(c._id || c.id)), c]));
-    Object.keys(checkedState).forEach((calendarId) => {
-      if (checkedState[calendarId]) {
-        const cal = calendarMap.get(String(calendarId));
-        if (cal) {
-          if (cal.originalCalendarId) idSet.add(String(cal.originalCalendarId));
-          else idSet.add(String(toId(cal._id || cal.id)));
-        }
-      }
-    });
-    return idSet;
-  }, [calendars, checkedState]);
-
+  // 6. 필터링 (원본/공유 캘린더 모두 고려)
   const filteredEvents = useMemo(() => {
+    if (!Array.isArray(events) || !Array.isArray(calendars)) return [];
+
     return events.filter((event) => {
-      const eventCalendarId = String(
+      const evCalId = String(
         toId(event.calendar?._id) ||
-          toId(event.calendar?.id) ||
-          toId(event.calendar)
+        toId(event.calendar?.id) ||
+        toId(event.calendar)
       );
-      return visibleOriginalIds.has(eventCalendarId);
+
+      if (!evCalId) return false;
+
+      // 이 이벤트가 속한 캘린더(원본 또는 공유)를 찾는다.
+      const relatedCalendar = calendars.find((c) => {
+        const id = String(toId(c._id || c.id));
+        const originalId = c.originalCalendarId
+          ? String(c.originalCalendarId)
+          : null;
+
+        return (
+          evCalId === id ||             // 이벤트가 이 캘린더 id를 직접 사용
+          (originalId && evCalId === originalId) // 이벤트는 원본 id, c는 공유 캘린더
+        );
+      });
+
+      if (!relatedCalendar) return false;
+
+      const relatedId = String(toId(relatedCalendar._id || relatedCalendar.id));
+
+      // 체크박스에 true 이거나, 아예 항목이 없으면 기본으로 보이게
+      return checkedState[relatedId] !== false;
     });
-  }, [events, visibleOriginalIds]);
+  }, [events, calendars, checkedState]);
 
   const parsedEvents = useMemo(
     () => convertEventsToDateEvents(filteredEvents),
     [filteredEvents]
   );
 
-  const CustomEvent = ({ event }) => (
-    <span>
-      <strong>{event.title}</strong>
-      {event.user?.name && ` - ${event.user.name}`}
-    </span>
-  );
+  // 공유 캘린더일 때만 작성자 이름 표시
+  const CustomEvent = ({ event }) => {
+    const evCalId = String(
+      toId(event.calendar?._id) ||
+      toId(event.calendar?.id) ||
+      toId(event.calendar)
+    );
+
+    const cal = calendars.find((c) => {
+      const id = String(toId(c._id || c.id));
+      const originalId = c.originalCalendarId ? String(c.originalCalendarId) : null;
+      return evCalId === id || (originalId && evCalId === originalId);
+    });
+
+    const isShared =
+      cal &&
+      (cal.originalCalendarId ||
+        (Array.isArray(cal.participants) && cal.participants.length > 0));
+
+    return (
+      <span>
+        <strong>{event.title}</strong>
+        {isShared && event.user?.name && ` - ${event.user.name}`}
+      </span>
+    );
+  };
 
   // 8. 렌더링
   return (
@@ -287,7 +303,6 @@ export const CalendarPage = () => {
           <div className="flex-grow-1 bg-white">
             <DragAndDropCalendar
               culture="ko"
-              // localizer={customLocalizer} // 수정된 localizer 사용
               localizer={localizer}
               events={parsedEvents}
               defaultView={lastView}
@@ -300,7 +315,6 @@ export const CalendarPage = () => {
               components={{ event: CustomEvent }}
               onEventDrop={handleEventDrop}
               onEventResize={handleEventResize}
-              resizable={undefined}
               resizableAccessor={eventCanBeModified}
               draggableAccessor={eventCanBeModified}
               onView={onViewChanged}
@@ -316,12 +330,12 @@ export const CalendarPage = () => {
             userId={String(user.uid)}
           />
         )}
+
         <AssistantFab onClick={() => setOpenAssistant(true)} />
         <AssistantChatModal
           open={openAssistant}
           onClose={() => setOpenAssistant(false)}
         />
-
       </div>
     </DndProvider>
   );
