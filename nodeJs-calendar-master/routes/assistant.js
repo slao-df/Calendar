@@ -474,7 +474,7 @@ function detectIntent(text = "", parsed = {}) {
   const timePattern = /\d{1,2}\s*시|\d{1,2}\s*[:시]\s*\d{0,2}/;
   const hasTimePattern = timePattern.test(t);
 
-  const suggestKeywords = ["추천", "괜찮", "좋을까", "어떤 요일", "언제가 좋"];
+  const suggestKeywords = ["추천", "괜찮", "좋을까", "어는 요일", "언제가 좋"];
   const hasSuggestWord = suggestKeywords.some((k) => t.includes(k));
 
   const createKeywords = [
@@ -502,7 +502,7 @@ function detectIntent(text = "", parsed = {}) {
   const queryKeywords = [
     "보여줘",
     "있었어",
-    "있어?",
+    "있어? ",
     "있어",
     "알려줘",
     "확인",
@@ -713,11 +713,15 @@ async function suggestWeeklyTimes({ userId, baseDate = new Date(), durationMin =
       startMinute: 0,
       endHour,
       endMinute: 0,
-      label: `${monthIdx + 1}월 ${date.getDate()}일(${weekdayNames[wd]}) ${String(
-        startHour
-      ).padStart(2, "0")}:00~${String(endHour).padStart(2, "0")}:00`,
+      // 🔸 표시용 문구만 변경: "12월 매주 목요일 15:00~16:00"
+      label: `${monthIdx + 1}월 매주 ${
+        weekdayNames[wd]
+      }요일 ${String(startHour).padStart(2, "0")}:00~${String(
+        endHour
+      ).padStart(2, "0")}:00`,
     };
   });
+
 
   return { year, month: monthIdx + 1, suggestions };
 }
@@ -1301,7 +1305,11 @@ async function handler(req, res) {
       });
     }
 
-    const isEveryWeek = /매주/.test(rawText);
+    // 🔹 "매주"가 들어있거나, 프론트에서 붙인 [REPEAT:WEEKLY] 태그가 있으면 주간 반복 의도로 해석
+    const isEveryWeek =
+      /매주/.test(rawText) ||
+      /\[REPEAT:WEEKLY\]/i.test(rawText) ||
+      req.body.repeat === "weekly";
 
     if (!month || Number.isNaN(month) || month < 1 || month > 12) {
       return res.status(400).json({
@@ -1317,8 +1325,25 @@ async function handler(req, res) {
     let respDay = day;
     let respWeekday = weekday;
 
+    // 🔹 반복 태그가 있고, 숫자 day 정보만 있을 경우 → 해당 날짜로 요일 계산
+    let weekdayResolved = weekday;
+    if (
+      isEveryWeek &&
+      (weekdayResolved == null || Number.isNaN(weekdayResolved)) &&
+      day != null
+    ) {
+      const tmp = new Date(year, month - 1, day, 0, 0, 0, 0);
+      if (!Number.isNaN(tmp.getTime())) {
+        weekdayResolved = tmp.getDay();
+      }
+    }
+
     // (1) 하루짜리 일정 : 숫자 날짜가 명시된 경우
-    if (!isEveryWeek && day != null && (weekday == null || Number.isNaN(weekday))) {
+    if (
+      !isEveryWeek &&
+      day != null &&
+      (weekdayResolved == null || Number.isNaN(weekdayResolved))
+    ) {
       const start = new Date(year, month - 1, day, sh, sm, 0, 0);
       const end = new Date(year, month - 1, day, eh, em, 0, 0);
       docs.push({ title, notes, start, end, user: userId, calendar: calendarId });
@@ -1326,14 +1351,14 @@ async function handler(req, res) {
       respWeekday = start.getDay();
     }
 
-    // (2) 요일만 있는 경우
-    else if (weekday != null && !Number.isNaN(weekday)) {
+    // (2) 요일만 있는 경우 (또는 반복 태그로 계산된 weekdayResolved)
+    else if (weekdayResolved != null && !Number.isNaN(weekdayResolved)) {
       if (!isEveryWeek) {
         // "매주"가 없으면 → 가장 가까운 해당 요일 하루만
         const base = new Date(year, month - 1, day ?? now.getDate(), 0, 0, 0, 0);
         let target = new Date(base);
         let safe = 0;
-        while (target.getMonth() === month - 1 && target.getDay() !== weekday && safe < 20) {
+        while (target.getMonth() === month - 1 && target.getDay() !== weekdayResolved && safe < 20) {
           target.setDate(target.getDate() + 1);
           safe++;
         }
@@ -1341,7 +1366,7 @@ async function handler(req, res) {
           // 이번 달을 벗어나면 그 달의 첫 번째 해당 요일
           target = new Date(year, month - 1, 1, 0, 0, 0, 0);
           safe = 0;
-          while (target.getMonth() === month - 1 && target.getDay() !== weekday && safe < 20) {
+          while (target.getMonth() === month - 1 && target.getDay() !== weekdayResolved && safe < 20) {
             target.setDate(target.getDate() + 1);
             safe++;
           }
@@ -1357,8 +1382,8 @@ async function handler(req, res) {
         respDay = start.getDate();
         respWeekday = start.getDay();
       } else {
-        // "매주"가 있는 경우에만 반복 일정
-        const days = allWeekdaysOfMonth(year, month, weekday).filter(
+        // "매주" 또는 [REPEAT:WEEKLY] 가 있는 경우 → 해당 월의 해당 요일 전체
+        const days = allWeekdaysOfMonth(year, month, weekdayResolved).filter(
           (d) => !untilDay || d.getDate() <= Number(untilDay)
         );
 
@@ -1379,7 +1404,7 @@ async function handler(req, res) {
         });
 
         respDay = null;
-        respWeekday = weekday;
+        respWeekday = weekdayResolved;
       }
     }
 
