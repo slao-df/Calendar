@@ -2,15 +2,15 @@
 import axios from 'axios';
 import { getEnvVariables } from '../helpers';
 
-// 🔹 환경 변수에서 API URL 불러오기
+// 환경 변수에서 API URL 불러오기
 const { VITE_API_URL } = getEnvVariables();
 
-// 🔹 Axios 인스턴스 생성
+// Axios 인스턴스 생성
 const calendarApi = axios.create({
   baseURL: VITE_API_URL,
 });
 
-// 🔹 요청 인터셉터 설정
+// 요청 인터셉터 설정
 calendarApi.interceptors.request.use((config) => {
   config.headers = {
     ...config.headers,
