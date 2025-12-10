@@ -91,15 +91,25 @@ const AccountSettingsPage = () => {
   return (
     <div
       className="container py-4"
-      style={{ maxWidth: "960px", margin: "0 auto" }}
+      style={{ maxWidth: "700px", margin: "0 auto" }}
     >
       {/* 상단 헤더 + 뒤로가기 */}
       <div className="d-flex align-items-center mb-4">
         <button
           type="button"
           onClick={handleBack}
-          className="btn btn-link p-0 me-2"
-          style={{ textDecoration: "none", color: "#4b5563" }}
+          className="border-0 bg-transparent d-flex align-items-center justify-content-center me-3"
+          style={{
+            width: "36px",
+            height: "36px",
+            borderRadius: "999px",
+            border: "1px solid #d1d5db",
+            color: "#111827",
+            fontSize: "20px",
+            fontWeight: 700,
+            lineHeight: 1,
+            cursor: "pointer",
+          }}
         >
           ←
         </button>
@@ -148,7 +158,7 @@ const AccountSettingsPage = () => {
           </div>
 
           <p className="text-muted mb-3" style={{ fontSize: "13px" }}>
-            로그인에 사용되는 이메일입니다. 필요하다면 이 화면에서 수정할 수 있습니다.
+            로그인에 사용되는 이메일입니다.
           </p>
 
           {/* 카드 안 왼쪽 아래: 비밀번호 변경 버튼 (편집 중 + 아직 카드 안 열렸을 때만) */}
