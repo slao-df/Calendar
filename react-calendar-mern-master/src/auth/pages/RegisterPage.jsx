@@ -36,7 +36,7 @@ export const RegisterPage = () => {
       <div className="register-container">
         <div className="logo-container">
           <h1>회원가입</h1>
-          <p>Calender 계정을 만들어 시작해보세요.</p>
+          <p>Schedy 계정을 만들어 시작해보세요.</p>
         </div>
 
         <form className="register-form" onSubmit={registerSubmit}>
