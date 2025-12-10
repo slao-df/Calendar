@@ -48,7 +48,7 @@ export default function UserProfileMenu({ user: userProp }) {
     width: 40,
     height: 40,
     borderRadius: "50%",
-    backgroundColor: "#637bff", // +일정쓰기 버튼과 동일 계열
+    backgroundColor: "#637bff",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
@@ -84,6 +84,8 @@ export default function UserProfileMenu({ user: userProp }) {
             width: "220px",
             zIndex: 1500,
             border: "1px solid #e5e7eb",
+            borderRadius: "12px", 
+            overflow: "hidden",  
           }}
         >
           <div className="px-3 pt-3 pb-2 border-bottom">
