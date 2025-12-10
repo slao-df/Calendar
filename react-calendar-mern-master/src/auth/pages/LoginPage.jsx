@@ -1,22 +1,22 @@
 // src/auth/pages/LoginPage.jsx
 
 import React, { useEffect } from 'react';
-// 👇 1. useLocation, useNavigate, Link를 import 합니다.
+// 1. useLocation, useNavigate, Link를 import 합니다.
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { useForm } from '../../hooks/useForm';
 import { useAuthStore } from '../../hooks/useAuthStore';
 import './LoginPage.css';
-
+import SchedyLogo from '../../assets/SchedyLogo.png';
 export const LoginPage = () => {
-  // 👇 2. 스토어에서 status를 추가로 가져옵니다.
+  // 2. 스토어에서 status를 추가로 가져옵니다.
   const { startLogin, errorMessage, status } = useAuthStore();
   const { loginEmail, loginPassword, onInputChange: onLoginInputChange } = useForm({
     loginEmail: '',
     loginPassword: '',
   });
 
-  // 👇 3. 훅을 실행합니다.
+  // 3. 훅을 실행합니다.
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -34,7 +34,7 @@ export const LoginPage = () => {
     }
   }, [errorMessage]);
 
-  // 👇 4. [핵심] 로그인 상태가 변경될 때 실행되는 로직을 추가합니다.
+  // 4. 로그인 상태가 변경될 때 실행되는 로직을 추가합니다.
   useEffect(() => {
     if (status === 'authenticated') {
       // URL에서 'redirectTo' 파라미터를 읽어옵니다.
@@ -48,11 +48,12 @@ export const LoginPage = () => {
 
 
   return (
-    // 👇 5. 기존의 JSX 구조는 그대로 유지됩니다.
+    // 5. 기존의 JSX 구조는 그대로 유지됩니다.
     <div className="login-background">
       <div className="login-container">
         <div className="logo-container">
-          <h1>Calender</h1>
+          <img src={SchedyLogo} alt="Schedy logo" />
+          <h1>Schedy</h1>
         </div>
         <form className="login-form" onSubmit={loginSubmit}>
           <div className="input-group">
@@ -89,11 +90,11 @@ export const LoginPage = () => {
           <div className="separator">
             <span>또는</span>
           </div>
-          <div className="social-login">
+          {/* <div className="social-login">
             <button type="button" className="social-button google">
                Google 계정으로 로그인
             </button>
-          </div>
+          </div> */}
         </form>
         <div className="signup-link">
           <p>계정이 없으신가요? <Link to="/auth/register">회원가입</Link></p>
