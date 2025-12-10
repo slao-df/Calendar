@@ -21,14 +21,30 @@
   text-align: center;
 }
 
+
 /* 로고 */
 .logo-container {
+  display: flex;
+  align-items: center;      /* 세로 중앙 정렬 */
+  justify-content: center;  /* 전체를 가운데로 */
+  gap: 10px;                /* 로고와 글자 간격 */
   margin-bottom: 30px;
 }
 
 .logo-container h1 {
   font-size: 28px;
   color: #333;
+  margin: 0;
+}
+
+.logo-container img {
+  width: 40px; /* 텍스트 높이에 맞게 조정 */
+  height: 40px;
+  object-fit: contain;
+}
+
+.logo-container h1 {
+  font-size: 32px;
   margin: 0;
 }
 
