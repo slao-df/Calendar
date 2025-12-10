@@ -1,6 +1,7 @@
 // src/ui/components/Navbar.jsx
 import { useAuthStore } from "../../hooks/useAuthStore";
 import UserProfileMenu from "./UserProfileMenu";
+import SchedyLogo from "../../assets/SchedyLogo.png";
 
 export const Navbar = () => {
   const { user } = useAuthStore();
@@ -12,12 +13,13 @@ export const Navbar = () => {
     >
       {/* 왼쪽 영역 */}
       <div className="d-flex align-items-center">
-        <i
-          className="fas fa-calendar-alt me-2"
-          style={{ color: "#4e73df", fontSize: "22px" }}
-        ></i>
+        <img
+          src={SchedyLogo}
+          alt="Schedy Logo"
+          style={{ width: "32px", height: "32px", marginRight: "8px" }}
+        />
         <span className="fw-bold" style={{ fontSize: "18px" }}>
-          캘린더
+          Schedy
         </span>
       </div>
 
