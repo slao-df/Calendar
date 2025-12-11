@@ -4,7 +4,7 @@
 // - 캘린더 이름 부분 매칭 + 제목/내용 기반 추론
 // - 한 번짜리 / 매주 반복 일정 구분
 // - 한국어 자연어 파서(월/일/요일/시간/캘린더명/제목)
-// - intent: 'chat' / 'clarify-date' / 'create' / 'suggest-time' / 'delete' / 'query' / 'share-calendar'
+// - intent: 'chat' / 'clarify-date' / 'create' / 'suggest-time' / 'delete' / 'query' / 'share-calendar' / 'create-calendar'
 
 const router = require("express").Router();
 const mongoose = require("mongoose");
@@ -29,7 +29,7 @@ const { GoogleGenerativeAI } = require("@google/generative-ai");
 const nodemailer = require("nodemailer");
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
-const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 
 const MAIL_USER = process.env.MAIL_USER || "";
 const MAIL_PASS = process.env.MAIL_PASS || "";
@@ -65,42 +65,52 @@ function ensureGeminiModel() {
 async function runGeneralChat(userText) {
   const model = ensureGeminiModel();
 
-  const fallback =
-    "저는 'Schedy'라는 이름의 **공유 캘린더 도우미**예요.\n" +
-    "이 캘린더 안에서 일정 추가·추천·삭제·조회 같은 일을 도와주고,\n" +
-    "가벼운 질문이나 고민에도 답변을 드릴 수 있습니다.\n\n" +
-    "예를 들어,\n" +
-    '- "다음 주 화요일 오후 3시에 회의 일정 추가해줘"\n' +
-    '- "이번 달 중에 여행 가기 좋은 날 추천해줘"\n' +
-    '- "회사1 일정 삭제해줘"\n' +
-    "처럼 말씀하시면 캘린더를 대신 조작해 드려요. 🙂";
+  // Gemini가 죽었을 때 최소한의 fallback
+  const fallback = 
+    "저는 공유 캘린더 도우미 **Schedy**예요. 일정 관리 외의 질문도 도와드릴 수 있어요!";
 
   if (!model) return fallback;
 
-  const systemPrompt =
-    "너는 'Schedy'라는 이름의 **공유 캘린더/스케줄 관리 도우미**다. " +
-    "사용자와는 항상 한국어로 대화하고, 우선 사용자의 질문이 일정/시간/약속과 관련된지 살펴본다. " +
-    "관련이 있을 경우, 캘린더 안에서 어떤 도움을 줄 수 있는지 먼저 짧게 안내한 뒤 답변한다. " +
-    "코딩 공부처럼 캘린더와 직접적 관련이 없는 질문도 친절하게 답해도 되지만, " +
-    "네가 '공유 캘린더 내부에서 동작하는 비서'라는 정체성을 1~2문장 정도에서 자연스럽게 언급해라. " +
-    "답변은 최대한 간결하고 단계적으로 설명해라.";
-
-  const fullPrompt = `${systemPrompt}\n\n사용자 질문: ${userText}`;
-
   try {
-    const result = await model.generateContent(fullPrompt);
-    const response = result && result.response;
-    const text =
-      (response && typeof response.text === "function"
-        ? response.text()
-        : "") || "";
-    if (text.trim()) return text.trim();
-    return fallback;
+    const systemPrompt = `
+너는 'Schedy'라는 이름의 AI 도우미야.
+두 가지 역할을 가진다.
+
+1) 일정 관련 요청:
+   - 일정 추가 / 삭제 / 수정 / 조회 / 추천 / 캘린더 공유 등
+   - 일정 관련이면 **assistant.js**의 전용 로직이 처리함.
+
+2) 일반 질문:
+   - 사용자가 일정과 관련 없는 질문을 하면
+     너는 ChatGPT처럼 자연스럽고 깊은 대답을 해주면 된다.
+
+주의:
+- 일정 관련 요청이라고 판단되는 경우는 assistant.js에서 intent가 처리하므로
+  여기서는 오직 "일반 대화"만 대답한다.
+- 설명할 때 '캘린더 AI입니다'라고 굳이 반복하지 말고 자연스럽게 대답한다.
+`;
+
+    const fullPrompt = [
+      {
+        role: "user",
+        parts: [{ text: `${systemPrompt}\n\n사용자 질문: ${userText}` }],
+      },
+    ];
+
+    const result = await model.generateContent({
+      contents: fullPrompt,
+      generationConfig: { temperature: 0.7 },
+    });
+
+    const text = result?.response?.text();
+    return text?.trim() || fallback;
+
   } catch (err) {
-    console.error("[ASSISTANT CHAT][Gemini] 호출 오류:", err);
+    console.error("[GeneralChat Gemini Error]", err);
     return fallback;
   }
 }
+
 
 // ───────────────────── 이메일 전송 설정 ─────────────────────
 
@@ -535,6 +545,38 @@ function detectIntent(text = "", parsed = {}) {
     return "share-calendar";
   }
 
+   // 새로 추가: 캘린더 삭제 intent
+  // - "캘린더"라는 단어가 있고
+  // - "일정"이라는 단어는 없고
+  // - 삭제/지워/없애/취소 같은 단어가 있는 경우
+  const hasCalendarDelete =
+    t.includes("캘린더") &&
+    !t.includes("일정") &&
+    hasDeleteWord;
+
+  if (hasCalendarDelete) {
+    return "delete-calendar";
+  }
+
+  // 캘린더 생성 intent
+  // - "캘린더"는 등장하지만
+  // - "일정"이라는 단어는 없고
+  // - 추가/만들기/생성 같은 동사가 있으며
+  // - 날짜/시간 정보는 없고
+  // - 추천/삭제/조회 키워드는 없음
+  const hasCalendarCreate =
+    t.includes("캘린더") &&
+    !t.includes("일정") &&
+    hasCreateWord &&
+    !hasAnyDateInfo &&
+    !hasSuggestWord &&
+    !hasDeleteWord &&
+    !hasQueryWord;
+
+  if (hasCalendarCreate) {
+    return "create-calendar";
+  }
+
   // 삭제
   if (hasDeleteWord && hasCalendarWord) {
     return "delete";
@@ -713,7 +755,7 @@ async function suggestWeeklyTimes({ userId, baseDate = new Date(), durationMin =
       startMinute: 0,
       endHour,
       endMinute: 0,
-      // 🔸 표시용 문구만 변경: "12월 매주 목요일 15:00~16:00"
+      // 표시용 문구: "12월 매주 목요일 15:00~16:00"
       label: `${monthIdx + 1}월 매주 ${
         weekdayNames[wd]
       }요일 ${String(startHour).padStart(2, "0")}:00~${String(
@@ -721,7 +763,6 @@ async function suggestWeeklyTimes({ userId, baseDate = new Date(), durationMin =
       ).padStart(2, "0")}:00`,
     };
   });
-
 
   return { year, month: monthIdx + 1, suggestions };
 }
@@ -1209,6 +1250,126 @@ async function handler(req, res) {
       }
     }
 
+    // create-calendar : 새 캘린더 생성
+    if (intent === "create-calendar") {
+      if (!Calendar) {
+        return res.status(500).json({
+          ok: false,
+          msg: "캘린더 모델을 찾을 수 없어 새 캘린더를 만들지 못했어요.",
+        });
+      }
+
+      const rawName =
+        calendarSummaryInput ||
+        parsed.calendarSummary ||
+        "새 캘린더";
+
+      const name = rawName.toString().trim() || "새 캘린더";
+
+      const newCal = await Calendar.create({
+        name,
+        user: userId,
+        color: "#b9d5f2ff",
+      });
+
+      const answer =
+        `'${newCal.name}' 캘린더를 만들었어요.\n` +
+        "이제 이 캘린더에 추가할 일정을 말씀해 주시면 바로 넣어 드릴게요.";
+
+      return res.json({
+        ok: true,
+        mode: "create-calendar",
+        calendarId: String(newCal._id),
+        calendarName: newCal.name,
+        answer,
+      });
+    }
+
+        // delete-calendar : 캘린더 + 그 안의 모든 일정 삭제
+    if (intent === "delete-calendar") {
+      if (!Calendar) {
+        return res.status(500).json({
+          ok: false,
+          msg: "캘린더 정보를 찾을 수 없어 캘린더를 삭제할 수 없습니다.",
+        });
+      }
+
+      // 어떤 캘린더인지 이름 정보 가져오기
+      const explicitName =
+        (calendarSummaryInput && calendarSummaryInput.trim()) ||
+        (parsed.calendarSummary && parsed.calendarSummary.trim()) ||
+        "";
+
+      if (!explicitName) {
+        return res.status(400).json({
+          ok: false,
+          msg:
+            "어느 캘린더를 삭제해야 할지 잘 모르겠어요.\n" +
+            '"회사 캘린더 삭제해줘", "여행 캘린더 지워줘"처럼 캘린더 이름을 함께 말씀해 주세요.',
+        });
+      }
+
+      const calendars = await Calendar.find({ user: userId }).lean();
+      if (!calendars.length) {
+        return res.status(404).json({
+          ok: false,
+          msg: "현재 생성된 캘린더가 없어서 삭제할 수 없습니다.",
+        });
+      }
+
+      // 이름 매칭 (resolveCalendarId와 동일한 로직 재사용)
+      const raw = explicitName;
+      const keyword = raw.replace(/캘린더|일정/g, "").trim();
+
+      let target =
+        // (1) 키워드 완전 일치
+        calendars.find((c) => c.name === keyword) ||
+        // (2) 키워드 부분 포함
+        calendars.find(
+          (c) => c.name.includes(keyword) || keyword.includes(c.name)
+        ) ||
+        // (3) 원문 기준 부분 포함
+        calendars.find(
+          (c) => c.name.includes(raw) || raw.includes(c.name)
+        );
+
+      if (!target) {
+        return res.status(404).json({
+          ok: false,
+          msg:
+            `'${explicitName}' 이름을 가진 캘린더를 찾지 못했어요.\n` +
+            "캘린더 이름을 한 번 더 확인해 주세요.",
+        });
+      }
+
+      const calId = target._id;
+
+      // 먼저 해당 캘린더의 모든 일정 삭제
+      const evResult = await Event.deleteMany({
+        user: userId,
+        calendar: calId,
+      });
+
+      // 그 다음 캘린더 문서 삭제
+      await Calendar.deleteOne({ _id: calId, user: userId });
+
+      const deletedEvents = evResult.deletedCount || 0;
+
+      const answer =
+        `'${target.name}' 캘린더와 그 안의 일정 ${deletedEvents}건을 삭제했어요.\n` +
+        "되돌릴 수 없으니, 필요하다면 새로운 캘린더를 다시 만들어 주세요.";
+
+      return res.json({
+        ok: true,
+        mode: "delete-calendar",
+        calendarId: String(calId),
+        calendarName: target.name,
+        deletedEvents,
+        answer,
+      });
+    }
+
+
     // ───────── suggest-time : 날짜/시간 추천 ─────────
     if (intent === "suggest-time") {
       const { suggestions } = await suggestWeeklyTimes({
@@ -1305,7 +1466,7 @@ async function handler(req, res) {
       });
     }
 
-    // 🔹 "매주"가 들어있거나, 프론트에서 붙인 [REPEAT:WEEKLY] 태그가 있으면 주간 반복 의도로 해석
+    // "매주"가 들어있거나, 프론트에서 붙인 [REPEAT:WEEKLY] 태그가 있으면 주간 반복 의도로 해석
     const isEveryWeek =
       /매주/.test(rawText) ||
       /\[REPEAT:WEEKLY\]/i.test(rawText) ||
@@ -1325,7 +1486,7 @@ async function handler(req, res) {
     let respDay = day;
     let respWeekday = weekday;
 
-    // 🔹 반복 태그가 있고, 숫자 day 정보만 있을 경우 → 해당 날짜로 요일 계산
+    // 반복 태그가 있고, 숫자 day 정보만 있을 경우 → 해당 날짜로 요일 계산
     let weekdayResolved = weekday;
     if (
       isEveryWeek &&
