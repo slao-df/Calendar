@@ -7,7 +7,7 @@
   align-items: center;
   min-height: 100vh;
   background-color: #f4f7f9;
-  font-family: 'Pretendard', sans-serif; /* 깔끔한 폰트로 변경 (없으면 기본 폰트) */
+  font-family: "Pretendard", sans-serif; /* 깔끔한 폰트로 변경 (없으면 기본 폰트) */
 }
 
 /* 로그인 카드 컨테이너 */
@@ -21,9 +21,8 @@
   text-align: center;
 }
 
-
-/* 로고 */
-.logo-container {
+/* 로고 영역 */
+.login-container .logo-container {
   display: flex;
   align-items: center;      /* 세로 중앙 정렬 */
   justify-content: center;  /* 전체를 가운데로 */
@@ -31,30 +30,28 @@
   margin-bottom: 30px;
 }
 
-.logo-container h1 {
-  font-size: 28px;
+/* “Schedy” 텍스트 */
+.login-container .logo-container h1 {
+  font-size: 32px;
   color: #333;
   margin: 0;
 }
 
-.logo-container img {
-  width: 40px; /* 텍스트 높이에 맞게 조정 */
+/* 로고 이미지 */
+.login-container .logo-container img {
+  width: 40px;  /* 텍스트 높이에 맞게 조정 */
   height: 40px;
   object-fit: contain;
 }
 
-.logo-container h1 {
-  font-size: 32px;
-  margin: 0;
-}
-
 /* 입력 필드 그룹 */
-.input-group {
+.login-container .input-group {
   position: relative;
   margin-bottom: 20px;
 }
 
-.input-group i {
+/* 입력 필드 아이콘 */
+.login-container .input-group i {
   position: absolute;
   left: 15px;
   top: 50%;
@@ -62,7 +59,8 @@
   color: #aaa;
 }
 
-.input-group input {
+/* 입력 필드 스타일 */
+.login-container .input-group input {
   width: 100%;
   padding: 12px 12px 12px 40px; /* 아이콘 공간 확보 */
   border: 1px solid #ddd;
@@ -71,9 +69,9 @@
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-.input-group input:focus {
+.login-container .input-group input:focus {
   outline: none;
-  border-color: #4A90E2; /* 기본 색상 */
+  border-color: #4a90e2; /* 기본 색상 */
   box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
 }
 
@@ -95,7 +93,7 @@
 
 .options-group input[type="checkbox"] {
   margin-right: 8px;
-  accent-color: #4A90E2; /* 기본 색상 */
+  accent-color: #4a90e2; /* 기본 색상 */
 }
 
 .options-group a {
@@ -104,7 +102,7 @@
 }
 
 .options-group a:hover {
-  color: #4A90E2; /* 기본 색상 */
+  color: #4a90e2; /* 기본 색상 */
 }
 
 /* 로그인 버튼 */
@@ -113,7 +111,7 @@
   padding: 14px;
   border: none;
   border-radius: 8px;
-  background-color: #4A90E2; /* 기본 색상 */
+  background-color: #4a90e2; /* 기본 색상 */
   color: white;
   font-size: 18px;
   font-weight: bold;
@@ -122,7 +120,7 @@
 }
 
 .login-button:hover {
-  background-color: #357ABD; /* 호버 시 살짝 어둡게 */
+  background-color: #357abd; /* 호버 시 살짝 어둡게 */
 }
 
 /* "또는" 구분선 */
@@ -136,20 +134,20 @@
 
 .separator::before,
 .separator::after {
-  content: '';
+  content: "";
   flex: 1;
   border-bottom: 1px solid #898989;
 }
 
 .separator:not(:empty)::before {
-  margin-right: .25em;
+  margin-right: 0.25em;
 }
 
 .separator:not(:empty)::after {
-  margin-left: .25em;
+  margin-left: 0.25em;
 }
 
-/* 소셜 로그인 버튼 */
+/* 소셜 로그인 버튼 (현재는 사용 안 해도 됨) */
 .social-button {
   width: 100%;
   padding: 12px;
@@ -177,11 +175,10 @@
 }
 
 .signup-link a {
-  color: #4A90E2; /* 기본 색상 */
+  color: #4a90e2; /* 기본 색상 */
   font-weight: bold;
   text-decoration: none;
 }
-
 
 /* input-group 안에 있는 인풋의 왼쪽 모서리도 둥글게 (Bootstrap 덮어쓰기) */
 .login-container .input-group > input,
