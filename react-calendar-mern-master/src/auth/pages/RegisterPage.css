@@ -1,24 +1,16 @@
 /* RegisterPage.css */
 
+/* 전체 배경 */
 .register-background {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
   background-color: #f4f7f9;
-  font-family: 'Pretendard', sans-serif;
+  font-family: "Pretendard", sans-serif;
 }
-.logo-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: 5px;
-  margin-bottom: 0px;
-}
-.logo-container p {
-  margin-bottom: 8px;
-}
+
+/* 회원가입 카드 컨테이너 */
 .register-container {
   background-color: #ffffff;
   padding: 40px;
@@ -27,24 +19,81 @@
   width: 100%;
   max-width: 420px;
   text-align: center;
+  color: #777;          /* 설명 텍스트 기본 색 */
 }
 
-.register-container {
-  color: #777;
-  margin-top: 8px;
-  margin-bottom: 30px;
+/* 상단 타이틀 / 설명 영역 */
+.register-container .logo-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 5px;
+  margin-bottom: 0;
 }
 
+/* 회원가입 타이틀 */
+.register-container .logo-container h1 {
+  font-size: 32px;
+  color: #333;
+  margin: 0;
+}
+
+/* “Schedy 계정을 만들어 …” 문장 */
+.register-container .logo-container p {
+  margin-bottom: 8px;  /* 아래 입력창과 간격 */
+}
+
+/* 폼 전체 상단 여백 */
 .register-form {
   margin-top: 20px;
 }
 
+/* 인풋 그룹 */
+.register-container .input-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+/* 인풋 아이콘 */
+.register-container .input-group i {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #aaa;
+}
+
+/* 인풋 스타일 */
+.register-container .input-group input {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+/* 포커스 시 효과 */
+.register-container .input-group input:focus {
+  outline: none;
+  border-color: #4a90e2;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+}
+
+/* Bootstrap 등 다른 스타일이 있을 때를 대비해서 둥근 모서리 유지 */
+.register-container .input-group > input,
+.register-container .input-group > .form-control {
+  border-radius: 8px !important;
+}
+
+/* 회원가입 버튼 */
 .register-button {
   width: 100%;
   padding: 14px;
   border: none;
   border-radius: 8px;
-  background-color: #4A90E2; /* 기본 색상 */
+  background-color: #4a90e2; /* 기본 색상 */
   color: white;
   font-size: 18px;
   font-weight: bold;
@@ -54,9 +103,10 @@
 }
 
 .register-button:hover {
-  background-color: #357ABD;
+  background-color: #357abd;
 }
 
+/* 하단 로그인 링크 */
 .login-link {
   margin-top: 25px;
   font-size: 14px;
@@ -64,21 +114,7 @@
 }
 
 .login-link a {
-  color: #4A90E2; /* 기본 색상 */
+  color: #4a90e2; /* 기본 색상 */
   font-weight: bold;
   text-decoration: none;
-}
-
-/* LoginPage.css에서 가져온 스타일 재활용 */
-.logo-container h1 { font-size: 28px; color: #333; margin: 0; }
-.input-group { position: relative; margin-bottom: 20px; }
-.input-group i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #aaa; }
-.input-group input { width: 100%; padding: 12px 12px 12px 40px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; transition: border-color 0.3s, box-shadow 0.3s; }
-.input-group input:focus { outline: none; border-color: #4A90E2; box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2); }
-
-
-
-.register-container .input-group > input,
-.register-container .input-group > .form-control {
-  border-radius: 8px !important;
 }
